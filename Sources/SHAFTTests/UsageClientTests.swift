@@ -28,6 +28,8 @@ func runUsageClientTests() async throws {
         "fetch sends bearer token")
     XCTAssertEqual(http.lastHeaders["anthropic-version"], "2023-06-01",
         "fetch sends anthropic-version header")
+    XCTAssertEqual(http.lastHeaders["Accept"], "application/json",
+        "accept header")
     XCTAssertEqual(http.lastURL?.absoluteString,
         "https://api.anthropic.com/api/oauth/usage",
         "fetch hits usage URL")

@@ -32,7 +32,16 @@ public final class TmuxController {
 
     public func currentModel() -> ClaudeModel? {
         let pane = capturePane().lowercased()
-        return ClaudeModel.allCases.first { pane.contains($0.rawValue) }
+        var best: (model: ClaudeModel, index: String.Index)?
+        for model in ClaudeModel.allCases {
+            guard let range = pane.range(
+                of: model.rawValue, options: .backwards
+            ) else { continue }
+            if best == nil || range.lowerBound > best!.index {
+                best = (model, range.lowerBound)
+            }
+        }
+        return best?.model
     }
 
     @discardableResult

@@ -55,4 +55,18 @@ func runTmuxSwitchTests() {
     r4.result = .init(stdout: "model: Sonnet 5", stderr: "", code: 0)
     XCTAssertEqual(TmuxController(runner: r4).currentModel(), .sonnet,
         "currentModel reads pane text")
+
+    let r5 = FakeRunner()
+    r5.result = .init(stdout: "> ready", stderr: "", code: 0)
+    XCTAssertTrue(TmuxController(runner: r5).switchModel(.opus),
+        "switchModel sends while idle")
+    XCTAssertEqual(r5.calls.last, ["/usr/bin/env", "tmux", "send-keys",
+        "-t", "claude", "/model opus", "Enter"],
+        "switchModel builds correct tmux args when idle")
+
+    let r6 = FakeRunner()
+    r6.result = .init(stdout: "was on opus earlier\nnow model: sonnet",
+        stderr: "", code: 0)
+    XCTAssertEqual(TmuxController(runner: r6).currentModel(), .sonnet,
+        "currentModel prefers the most recent mention")
 }

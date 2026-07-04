@@ -4,13 +4,19 @@ public protocol HTTPFetching {
     func get(_ url: URL, headers: [String: String]) async throws -> Data
 }
 
+public enum HTTPError: Error { case badStatus(Int) }
+
 public struct URLSessionHTTP: HTTPFetching {
     public init() {}
     public func get(_ url: URL,
                     headers: [String: String]) async throws -> Data {
         var req = URLRequest(url: url)
         for (k, v) in headers { req.setValue(v, forHTTPHeaderField: k) }
-        let (data, _) = try await URLSession.shared.data(for: req)
+        let (data, response) = try await URLSession.shared.data(for: req)
+        if let http = response as? HTTPURLResponse,
+           !(200..<300).contains(http.statusCode) {
+            throw HTTPError.badStatus(http.statusCode)
+        }
         return data
     }
 }
