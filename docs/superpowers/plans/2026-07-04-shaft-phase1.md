@@ -27,6 +27,10 @@ Model switching via the `tmux` CLI.
 - Source file ≤300 lines; function ≤50 lines; line ≤80 columns.
 - Markdown file ≤150 lines.
 - TDD: failing test first; commit after each green task.
+- **Tests run under the SHAFTTestKit harness, not XCTest** (this env has no
+  Xcode). Follow `2026-07-04-shaft-phase1/testing-harness.md`: test files in
+  `Sources/SHAFTTests/`, each suite a `run<Suite>()` registered in
+  `main.swift`, run via `swift run SHAFTTests` (green = `failures: 0`).
 - Keychain service string is exactly `Claude Code-credentials`; token lives at
   JSON path `claudeAiOauth.accessToken`.
 - Usage request headers: `Authorization: Bearer <token>`,
