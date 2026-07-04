@@ -30,3 +30,29 @@ func runTmuxTests() throws {
     XCTAssertEqual(try SecurityCLITokenSource(runner: r3).accessToken(),
         "sk-z", "reads token from security CLI output")
 }
+
+func runTmuxSwitchTests() {
+    let r = FakeRunner()
+    TmuxController(runner: r, session: "claude").send(model: .sonnet)
+    XCTAssertEqual(r.calls.last, ["/usr/bin/env", "tmux", "send-keys",
+        "-t", "claude", "/model sonnet", "Enter"],
+        "send(model:) builds correct tmux args")
+
+    let r2 = FakeRunner()
+    let t = TmuxController(runner: r2)
+    r2.result = .init(stdout: "> ready", stderr: "", code: 0)
+    XCTAssertTrue(t.isIdle(), "no busy marker means idle")
+    r2.result = .init(stdout: "…thinking (esc to interrupt)",
+        stderr: "", code: 0)
+    XCTAssertFalse(t.isIdle(), "busy marker means not idle")
+
+    let r3 = FakeRunner()
+    r3.result = .init(stdout: "esc to interrupt", stderr: "", code: 0)
+    XCTAssertFalse(TmuxController(runner: r3).switchModel(.opus),
+        "switchModel does not send while busy")
+
+    let r4 = FakeRunner()
+    r4.result = .init(stdout: "model: Sonnet 5", stderr: "", code: 0)
+    XCTAssertEqual(TmuxController(runner: r4).currentModel(), .sonnet,
+        "currentModel reads pane text")
+}
