@@ -2,7 +2,7 @@
 
 - **Date:** 2026-07-04
 - **Status:** Approved design, pre-implementation
-- **Working name:** claude-critter (mascot name TBD)
+- **Mascot / app name:** SHAFT (repo: claude-critter)
 
 ## Concept
 
@@ -58,8 +58,13 @@ tmux is the bridge that works identically across Terminal.app and VS Code's
 integrated terminal (both target platforms), because it sits under whichever
 front-end attaches.
 
-- User runs Claude inside a tmux session (MVP: named `claude`, configurable
-  as `session:window.pane`).
+- Claude runs inside a tmux session (default name `claude`, configurable).
+  tmux sessions are detachable, so the session exists independently of any
+  window; you attach from Terminal or VS Code with `tmux attach -t claude`.
+- **Session management is hybrid:** SHAFT runs `tmux has-session` on startup.
+  If the session exists it targets it; if not, it offers a one-click "Start
+  session" (`tmux new-session -d -s claude 'claude'`, detached). If Claude is
+  running outside tmux, switching is greyed out with a hint.
 - Switch: `tmux send-keys -t claude '/model sonnet' Enter`.
 - Confirm / detect drift: parse `tmux capture-pane -p -t claude`.
 - Idle gating: before sending, check the pane shows the input prompt (not a
@@ -117,8 +122,8 @@ Layered assets — composite at runtime instead of drawing every combination:
 
 ## Risks / open questions
 
-- **Session discovery:** MVP assumes tmux session `claude`; later, auto-detect
-  the pane running a `claude` process.
+- **Session discovery:** hybrid detect + launch (above); a later nicety is
+  auto-detecting a `claude` process already running outside tmux.
 - **Switch while streaming:** confirm whether Claude queues or drops an
   injected `/model` mid-response; gate on idle if it drops.
 - **Manual drift:** if the user types `/model` directly, re-read
