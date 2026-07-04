@@ -5,4 +5,5 @@ import SHAFTTestKit
 runSmokeTests()
 runModelTests()
 runUsageTests()
+runBalanceTests()
 xctReport()
