@@ -19,3 +19,15 @@ public enum CredentialsParser {
         return t
     }
 }
+
+public struct SecurityCLITokenSource: TokenSource {
+    private let runner: CommandRunner
+    public init(runner: CommandRunner) { self.runner = runner }
+    public func accessToken() throws -> String {
+        let r = runner.run("/usr/bin/security", [
+            "find-generic-password",
+            "-s", "Claude Code-credentials", "-w"])
+        guard r.code == 0 else { throw TokenError.notFound }
+        return try CredentialsParser.token(from: Data(r.stdout.utf8))
+    }
+}
