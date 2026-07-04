@@ -28,7 +28,7 @@ character.
 - No per-model usage breakdown (the API reports aggregate usage).
 - No control of non-tmux sessions in the MVP.
 
-## Architecture (three modules)
+## Architecture (four modules)
 
 1. **Meter** — reads the Claude Code OAuth token from macOS Keychain
    (service `Claude Code-credentials`) via `/usr/bin/security`, then polls
@@ -40,6 +40,8 @@ character.
    `tmux capture-pane -p` to confirm the switch and detect manual drift.
 3. **Character** — renders the critter from (model, mood) in the menu bar
    and, in phase 2, the floating pet window.
+4. **Balance** (optional, graceful) — an extra money line. See below; it
+   shows only when real data exists.
 
 ## Tech stack
 
@@ -62,6 +64,25 @@ front-end attaches.
 - Confirm / detect drift: parse `tmux capture-pane -p -t claude`.
 - Idle gating: before sending, check the pane shows the input prompt (not a
   streaming response) so the command lands as a command, not queued text.
+
+## Balance line (graceful degradation)
+
+An optional money line, resolved in priority order every refresh:
+
+1. **Plan overage** — if `/api/oauth/usage` reports an extra-usage balance
+   (Max/Pro with extra usage enabled), show it. Free: it rides the existing
+   poll, no new machinery.
+2. **Live proxy balance** — else, if the opt-in local proxy is enabled, show
+   the locally-computed spend. The widget runs a small localhost proxy;
+   Claude Code points at it via `ANTHROPIC_BASE_URL`; each API response's
+   `usage` tokens are priced from a bundled cost table and subtracted from a
+   user-entered starting balance. Event-driven (updates on each call), not a
+   poll loop.
+3. **Hide** — else, omit the line entirely.
+
+There is no official real-time credit-balance endpoint; the Admin cost API is
+delayed/aggregate, so the proxy is the only way to a smoothly dropping counter.
+Mood stays driven by plan usage in the MVP, not by money.
 
 ## Character system
 
@@ -88,9 +109,11 @@ Layered assets — composite at runtime instead of drawing every combination:
 ## Phasing
 
 - **Phase 1 (MVP):** menu-bar critter, usage bars, tmux switcher, mood +
-  outfit swapping. Target: ~a long weekend.
+  outfit swapping, and the plan-overage balance line when present (free).
+  Target: ~a long weekend.
 - **Phase 2:** toggleable floating desktop pet — same character, idle
   animations (blink, wander, nap when rate-limited), right-click to switch.
+- **Phase 3 (optional):** local proxy for a live raw-API EUR counter.
 
 ## Risks / open questions
 
@@ -103,6 +126,9 @@ Layered assets — composite at runtime instead of drawing every combination:
 - **Exact `/model` strings:** verify aliases against the installed Claude
   Code version during implementation.
 - **Distribution:** signing/notarization for a shippable `.app` (later).
+- **Proxy fidelity (phase 3):** the bundled price table must track model
+  pricing; cache-read/write token tiers affect cost; a mispriced entry drifts
+  the counter. Proxy also adds a localhost dependency to every API call.
 
 ## Success criteria
 
