@@ -1,4 +1,6 @@
-import SHAFTCore
-
-// Real bootstrap arrives in Task 10.
-print("SHAFT \(SHAFTCore.version)")
+import AppKit
+let app = NSApplication.shared
+app.setActivationPolicy(.accessory)      // menu-bar only, no Dock icon
+let delegate = AppDelegate()
+app.delegate = delegate
+app.run()
