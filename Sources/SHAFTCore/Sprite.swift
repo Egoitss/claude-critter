@@ -1,15 +1,15 @@
 import Foundation
 
-// Hand-authored pixel-grid critter (18x18 for chunkier proportions). Rows
-// top->bottom. Legend: '.' empty, 'B' body (mood-tinted), 'K' eye (black),
-// 'A' accent (outfit color, on top). Side ears protrude at rows 7-8; body
-// is 14 wide; 4 legs 2-wide with the outer pair flush to the body edge.
+// Hand-authored pixel-grid critter (18x18). Rows top->bottom. Legend:
+// '.' empty, 'B' body (usage-colored), 'K' eye (black), 'A' accent (outfit
+// color, on top). Beefy side ears bulge out at rows 6-8; eyes are wide-set;
+// 4 legs with the outer pair flush to the body edge. Each grid is 18 rows.
 
 enum CritterSprite {
     static let dim = 18
 
-    // Rows (top, bottom) that contain the critter's body — used to drive
-    // the usage gauge (grey fills from the bottom row up).
+    // Rows (top, bottom) that contain the critter's body — drives the usage
+    // gauge (grey fills from the bottom row up).
     static var bodyRowRange: (Int, Int) {
         let rows = base.indices.filter {
             base[$0].contains("B") || base[$0].contains("K")
@@ -24,9 +24,9 @@ enum CritterSprite {
         "..BBBBBBBBBBBBBB..",
         "..BBBBBBBBBBBBBB..",
         "..BBBBBBBBBBBBBB..",
-        "..BBBKKBBBBKKBBB..",   // eyes
-        ".BBBBKKBBBBKKBBBB.",   // ears protrude (col 1 & 16)
-        ".BBBBBBBBBBBBBBBB.",
+        "BBBBKKBBBBBBKKBBBB",   // beefy ears + wide-set eyes
+        "BBBBKKBBBBBBKKBBBB",
+        "BBBBBBBBBBBBBBBBBB",   // ears (no eyes)
         "..BBBBBBBBBBBBBB..",
         "..BBBBBBBBBBBBBB..",
         "..BBBBBBBBBBBBBB..",
@@ -41,22 +41,21 @@ enum CritterSprite {
     static let outfits: [Outfit: [String]] = [
         .crown: [
             "..................",
-            "..................",
             "...A.A.A.A.A.A....",
             "...AAAAAAAAAAAA...",
             "..................", "..................", "..................",
             "..................", "..................", "..................",
             "..................", "..................", "..................",
             "..................", "..................", "..................",
-            "..................", "..................",
+            "..................", "..................", "..................",
         ],
         .headphones: [
             "..................", "..................",
-            "....AAAAAAAAAA....",
+            "...AAAAAAAAAAAA...",
             "..................", "..................", "..................",
-            "..................",
-            "A................A",
-            "A................A",
+            "AA..............AA",
+            "AA..............AA",
+            "AA..............AA",
             "..................", "..................", "..................",
             "..................", "..................", "..................",
             "..................", "..................", "..................",
@@ -65,7 +64,7 @@ enum CritterSprite {
             "..................", "..................", "..................",
             "..................", "..................",
             "..AAAAAAAAAAAAAA..",
-            "................A.",
+            "................AA",
             "..................", "..................", "..................",
             "..................", "..................", "..................",
             "..................", "..................", "..................",
