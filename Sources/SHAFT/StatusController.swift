@@ -4,6 +4,7 @@ final class StatusController: NSObject {
     private let item = NSStatusBar.system.statusItem(
         withLength: NSStatusItem.variableLength)
     private let renderer = CritterRenderer()
+    private let pet = PetWindow()
     private let tmux = TmuxController(runner: ProcessCommandRunner())
     private let client = UsageClient(http: URLSessionHTTP(),
         tokens: SecurityCLITokenSource(runner: ProcessCommandRunner()))
@@ -23,6 +24,10 @@ final class StatusController: NSObject {
     private func render() {
         item.button?.image = renderer.image(mood: mood, outfit: model.outfit)
         item.menu = buildMenu()
+        pet.update(
+            image: renderer.image(
+                mood: mood, outfit: model.outfit, size: 96),
+            menu: buildMenu())
     }
     private func buildMenu() -> NSMenu {
         let m = NSMenu()
@@ -38,6 +43,11 @@ final class StatusController: NSObject {
             m.addItem(targetSubmenu(sessions))
             m.addItem(modelSubmenu())
         }
+        m.addItem(.separator())
+        let petTitle = pet.isVisible ? "Hide pet" : "Show pet"
+        let petItem = NSMenuItem(title: petTitle,
+            action: #selector(togglePet), keyEquivalent: "")
+        petItem.target = self; m.addItem(petItem)
         m.addItem(.separator())
         m.addItem(NSMenuItem(title: "Quit SHAFT",
             action: #selector(NSApp.terminate(_:)), keyEquivalent: "q"))
@@ -74,6 +84,9 @@ final class StatusController: NSObject {
         parent.submenu = sub; return parent
     }
     @objc private func startSession() { tmux.startSession(); render() }
+    @objc private func togglePet() {
+        pet.setVisible(!pet.isVisible); render()
+    }
     @objc private func pickTarget(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
         target = name; tmux.session = name; render()
