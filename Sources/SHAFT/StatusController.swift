@@ -15,7 +15,7 @@ final class StatusController: NSObject {
     private var target = "claude"
     override init() {
         super.init()
-        model = tmux.currentModel() ?? .opus
+        model = SettingsModel.current() ?? .opus
         let s = tmux.controllableSessions()
         target = s.contains("claude") ? "claude" : (s.first ?? "claude")
         tmux.session = target
@@ -101,12 +101,12 @@ final class StatusController: NSObject {
     }
     private func refresh() {
         Task { @MainActor in
+            model = SettingsModel.current() ?? model   // reliable, no tmux
             guard let snap = try? await client.fetch() else {
-                schedule(60); return
+                render(); schedule(60); return
             }
             usage = snap.worstFraction
             balance = BalanceLine.resolve(snap).display
-            model = tmux.currentModel() ?? model
             render()
             schedule(pollInterval(worstFraction: snap.worstFraction))
         }
