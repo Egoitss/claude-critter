@@ -19,6 +19,30 @@ public final class TmuxController {
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
     }
+
+    // The tmux session SHAFT itself runs in (nil if not inside tmux), so it
+    // can be excluded from switch targets — never inject into our own pane.
+    // `env` is injectable for testing.
+    public func ownSession() -> String? {
+        ownSession(env: ProcessInfo.processInfo.environment)
+    }
+    public func ownSession(env: [String: String]) -> String? {
+        guard env["TMUX"] != nil else { return nil }
+        let r = tmux(["display-message", "-p", "#S"])
+        guard r.code == 0 else { return nil }
+        let name = r.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.isEmpty ? nil : name
+    }
+
+    // Sessions we may switch models in — every tmux session but our own.
+    public func controllableSessions() -> [String] {
+        controllableSessions(env: ProcessInfo.processInfo.environment)
+    }
+    public func controllableSessions(env: [String: String]) -> [String] {
+        let own = ownSession(env: env)
+        return listSessions().filter { $0 != own }
+    }
+
     public func startSession() {
         tmux(["new-session", "-d", "-s", session, "claude"])
     }

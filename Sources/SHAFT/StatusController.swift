@@ -16,7 +16,7 @@ final class StatusController: NSObject {
     override init() {
         super.init()
         model = tmux.currentModel() ?? .opus
-        let s = tmux.listSessions()
+        let s = tmux.controllableSessions()
         target = s.contains("claude") ? "claude" : (s.first ?? "claude")
         tmux.session = target
         render(); refresh()
@@ -35,7 +35,7 @@ final class StatusController: NSObject {
         m.addItem(info("Model: \(model.displayName)"))
         m.addItem(info(balance ?? "Extra usage: off"))
         m.addItem(.separator())
-        let sessions = tmux.listSessions()
+        let sessions = tmux.controllableSessions()
         if sessions.isEmpty {
             let s = NSMenuItem(title: "Start SHAFT session",
                 action: #selector(startSession), keyEquivalent: "")

@@ -4,8 +4,10 @@ import SHAFTTestKit
 final class FakeRunner: CommandRunner {
     var calls: [[String]] = []
     var result = CommandResult(stdout: "", stderr: "", code: 0)
+    var responder: (([String]) -> CommandResult)?
     func run(_ path: String, _ args: [String]) -> CommandResult {
-        calls.append([path] + args); return result
+        calls.append([path] + args)
+        return responder?(args) ?? result
     }
 }
 
@@ -91,4 +93,26 @@ func runTmuxTargetTests() {
     XCTAssertEqual(r3.calls.last, ["/usr/bin/env", "tmux", "send-keys",
         "-t", "work", "/model opus", "Enter"],
         "retargeting session redirects send(model:)")
+}
+
+func runSelfTargetTests() {
+    let r = FakeRunner()
+    r.responder = { args in
+        if args.contains("display-message") {
+            return .init(stdout: "claude\n", stderr: "", code: 0)
+        }
+        if args.contains("list-sessions") {
+            return .init(stdout: "claude\nwork\n", stderr: "", code: 0)
+        }
+        return .init(stdout: "", stderr: "", code: 0)
+    }
+    let t = TmuxController(runner: r)
+    XCTAssertNil(t.ownSession(env: [:]),
+        "ownSession is nil when not inside tmux")
+    XCTAssertEqual(t.ownSession(env: ["TMUX": "x"]), "claude",
+        "ownSession reads the current tmux session")
+    XCTAssertEqual(t.controllableSessions(env: [:]), ["claude", "work"],
+        "no filtering when SHAFT isn't inside tmux")
+    XCTAssertEqual(t.controllableSessions(env: ["TMUX": "x"]), ["work"],
+        "own session excluded from switch targets")
 }
