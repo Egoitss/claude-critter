@@ -8,6 +8,15 @@ import Foundation
 enum CritterSprite {
     static let dim = 18
 
+    // Rows (top, bottom) that contain the critter's body — used to drive
+    // the usage gauge (grey fills from the bottom row up).
+    static var bodyRowRange: (Int, Int) {
+        let rows = base.indices.filter {
+            base[$0].contains("B") || base[$0].contains("K")
+        }
+        return (rows.first ?? 0, rows.last ?? dim - 1)
+    }
+
     static let base: [String] = [
         "..................",
         "..................",
@@ -32,13 +41,14 @@ enum CritterSprite {
     static let outfits: [Outfit: [String]] = [
         .crown: [
             "..................",
+            "..................",
             "...A.A.A.A.A.A....",
             "...AAAAAAAAAAAA...",
             "..................", "..................", "..................",
             "..................", "..................", "..................",
             "..................", "..................", "..................",
             "..................", "..................", "..................",
-            "..................", "..................", "..................",
+            "..................", "..................",
         ],
         .headphones: [
             "..................", "..................",

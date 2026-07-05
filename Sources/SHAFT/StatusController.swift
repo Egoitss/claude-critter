@@ -9,7 +9,7 @@ final class StatusController: NSObject {
     private let client = UsageClient(http: URLSessionHTTP(),
         tokens: SecurityCLITokenSource(runner: ProcessCommandRunner()))
     private var model: ClaudeModel = .opus
-    private var mood: Mood = .fresh
+    private var usage: Double = 0
     private var balance: String?
     private var timer: Timer?
     private var target = "claude"
@@ -22,11 +22,12 @@ final class StatusController: NSObject {
         render(); refresh()
     }
     private func render() {
-        item.button?.image = renderer.image(mood: mood, outfit: model.outfit)
+        item.button?.image = renderer.image(
+            usage: usage, outfit: model.outfit)
         item.menu = buildMenu()
         pet.update(
             image: renderer.image(
-                mood: mood, outfit: model.outfit, size: 96),
+                usage: usage, outfit: model.outfit, size: 96),
             menu: buildMenu())
     }
     private func buildMenu() -> NSMenu {
@@ -102,7 +103,7 @@ final class StatusController: NSObject {
             guard let snap = try? await client.fetch() else {
                 schedule(60); return
             }
-            mood = Mood(usageFraction: snap.worstFraction)
+            usage = snap.worstFraction
             balance = BalanceLine.resolve(snap).display
             model = tmux.currentModel() ?? model
             render()

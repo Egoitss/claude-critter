@@ -6,13 +6,16 @@ import SHAFTCore
 // Default output: ~/Downloads/shaft-preview.png
 
 let renderer = CritterRenderer()
-let tiles: [(String, Mood, Outfit)] = [
-    ("opus", .fresh, .crown),
-    ("sonnet", .fresh, .headphones),
-    ("haiku", .fresh, .headband),
-    ("fable", .fresh, .wizardHat),
-    ("fable-tired", .tired, .wizardHat),
-    ("fable-asleep", .asleep, .wizardHat),
+// (label, usage 0...1, outfit). First four show outfits at low usage; the
+// last four show the fable critter filling grey from the feet by usage.
+let tiles: [(String, Double, Outfit)] = [
+    ("opus", 0.15, .crown),
+    ("sonnet", 0.15, .headphones),
+    ("haiku", 0.15, .headband),
+    ("fable 0%", 0.0, .wizardHat),
+    ("fable 40%", 0.4, .wizardHat),
+    ("fable 75%", 0.75, .wizardHat),
+    ("fable 100%", 1.0, .wizardHat),
 ]
 
 let tile: CGFloat = 144
@@ -33,7 +36,7 @@ NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
 NSColor(white: 0.12, alpha: 1).setFill()            // app-like dark bg
 NSRect(x: 0, y: 0, width: CGFloat(w), height: CGFloat(h)).fill()
 for (i, t) in tiles.enumerated() {
-    renderer.image(mood: t.1, outfit: t.2, size: tile)
+    renderer.image(usage: t.1, outfit: t.2, size: tile)
         .draw(at: NSPoint(x: CGFloat(i) * tile, y: 0),
               from: .zero, operation: .sourceOver, fraction: 1)
 }
