@@ -70,3 +70,25 @@ func runTmuxSwitchTests() {
     XCTAssertEqual(TmuxController(runner: r6).currentModel(), .sonnet,
         "currentModel prefers the most recent mention")
 }
+
+func runTmuxTargetTests() {
+    let r = FakeRunner()
+    r.result = .init(stdout: "claude\nwork\nfable-run\n",
+        stderr: "", code: 0)
+    XCTAssertEqual(TmuxController(runner: r).listSessions(),
+        ["claude", "work", "fable-run"],
+        "listSessions parses newline-separated session names")
+
+    let r2 = FakeRunner()
+    r2.result = .init(stdout: "", stderr: "no server", code: 1)
+    XCTAssertEqual(TmuxController(runner: r2).listSessions(), [],
+        "listSessions returns [] when tmux exits nonzero")
+
+    let r3 = FakeRunner()
+    let t = TmuxController(runner: r3, session: "claude")
+    t.session = "work"
+    t.send(model: .opus)
+    XCTAssertEqual(r3.calls.last, ["/usr/bin/env", "tmux", "send-keys",
+        "-t", "work", "/model opus", "Enter"],
+        "retargeting session redirects send(model:)")
+}

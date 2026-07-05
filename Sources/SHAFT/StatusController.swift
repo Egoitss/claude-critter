@@ -11,9 +11,13 @@ final class StatusController: NSObject {
     private var mood: Mood = .fresh
     private var balance: String?
     private var timer: Timer?
+    private var target = "claude"
     override init() {
         super.init()
         model = tmux.currentModel() ?? .opus
+        let s = tmux.listSessions()
+        target = s.contains("claude") ? "claude" : (s.first ?? "claude")
+        tmux.session = target
         render(); refresh()
     }
     private func render() {
@@ -25,12 +29,14 @@ final class StatusController: NSObject {
         m.addItem(info("Model: \(model.displayName)"))
         m.addItem(info(balance ?? "Extra usage: off"))
         m.addItem(.separator())
-        if tmux.hasSession() {
-            m.addItem(modelSubmenu())
-        } else {
+        let sessions = tmux.listSessions()
+        if sessions.isEmpty {
             let s = NSMenuItem(title: "Start SHAFT session",
                 action: #selector(startSession), keyEquivalent: "")
             s.target = self; m.addItem(s)
+        } else {
+            m.addItem(targetSubmenu(sessions))
+            m.addItem(modelSubmenu())
         }
         m.addItem(.separator())
         m.addItem(NSMenuItem(title: "Quit SHAFT",
@@ -54,9 +60,27 @@ final class StatusController: NSObject {
         }
         parent.submenu = sub; return parent
     }
+    private func targetSubmenu(_ sessions: [String]) -> NSMenuItem {
+        let parent = NSMenuItem(title: "Target", action: nil,
+            keyEquivalent: "")
+        let sub = NSMenu()
+        for name in sessions {
+            let mi = NSMenuItem(title: name,
+                action: #selector(pickTarget(_:)), keyEquivalent: "")
+            mi.target = self; mi.representedObject = name
+            mi.state = (name == target) ? .on : .off
+            sub.addItem(mi)
+        }
+        parent.submenu = sub; return parent
+    }
     @objc private func startSession() { tmux.startSession(); render() }
+    @objc private func pickTarget(_ sender: NSMenuItem) {
+        guard let name = sender.representedObject as? String else { return }
+        target = name; tmux.session = name; render()
+    }
     @objc private func pick(_ sender: NSMenuItem) {
         guard let cm = sender.representedObject as? ClaudeModel else { return }
+        if tmux.session != target { tmux.session = target }
         if tmux.switchModel(cm) { model = cm; render() }
         else { NSSound.beep() }                 // busy — retry when idle
     }

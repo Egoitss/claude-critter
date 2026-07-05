@@ -1,7 +1,7 @@
 import Foundation
 public final class TmuxController {
     private let runner: CommandRunner
-    public let session: String
+    public var session: String
     public init(runner: CommandRunner, session: String = "claude") {
         self.runner = runner; self.session = session
     }
@@ -11,6 +11,13 @@ public final class TmuxController {
     }
     public func hasSession() -> Bool {
         tmux(["has-session", "-t", session]).code == 0
+    }
+    public func listSessions() -> [String] {
+        let result = tmux(["list-sessions", "-F", "#{session_name}"])
+        guard result.code == 0 else { return [] }
+        return result.stdout.split(separator: "\n")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
     }
     public func startSession() {
         tmux(["new-session", "-d", "-s", session, "claude"])
