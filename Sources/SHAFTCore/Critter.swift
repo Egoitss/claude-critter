@@ -40,24 +40,17 @@ public struct CritterRenderer {
         let offset = ((s - cell * n) / 2).rounded(.down)   // center it
         let grey = greyFromRow(usage: f)
         let body = bodyColor, used = depletedColor
-        paint(CritterSprite.base, cell: cell, offset: offset) { r, c, ch in
+        paint(CritterSprite.base, cell: cell, offset: offset) { r, ch in
             if ch == "K" { return .black }
-            if ch == "B" {
-                let col = r >= grey ? used : body   // gauge color
-                return c % 3 == 0 ? shade(col) : col  // panel seams
-            }
+            if ch == "B" { return r >= grey ? used : body }
             return nil
         }
         if let overlay = CritterSprite.outfits[outfit] {
             let accent = outfitAccent(outfit)
-            paint(overlay, cell: cell, offset: offset) { _, _, ch in
+            paint(overlay, cell: cell, offset: offset) { _, ch in
                 ch == "A" ? accent : nil
             }
         }
-    }
-
-    private func shade(_ c: NSColor) -> NSColor {
-        c.blended(withFraction: 0.16, of: .black) ?? c
     }
 
     public var bodyRowRange: (Int, Int) { CritterSprite.bodyRowRange }
@@ -72,11 +65,11 @@ public struct CritterRenderer {
     }
 
     private func paint(_ grid: [String], cell: CGFloat, offset: CGFloat,
-                       color: (Int, Int, Character) -> NSColor?) {
+                       color: (Int, Character) -> NSColor?) {
         let n = CritterSprite.dim
         for (r, row) in grid.enumerated() {
             for (c, ch) in row.enumerated() {
-                guard let col = color(r, c, ch) else { continue }
+                guard let col = color(r, ch) else { continue }
                 col.setFill()
                 let x = offset + CGFloat(c) * cell
                 let y = offset + CGFloat(n - 1 - r) * cell
