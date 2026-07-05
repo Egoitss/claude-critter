@@ -30,36 +30,35 @@ public struct CritterRenderer {
         let body = moodTint(mood); let accent = outfitAccent(outfit)
         return NSImage(size: NSSize(width: size, height: size),
                        flipped: false) { _ in
-            self.drawCritter(size: size, body: body, accent: accent)
+            self.drawCritter(size: size, body: body, accent: accent,
+                             outfit: outfit)
             return true
         }
     }
 
     private func drawCritter(size s: CGFloat, body: NSColor,
-                             accent: NSColor) {
-        body.setFill()                       // body
-        NSBezierPath(roundedRect: NSRect(x: s*0.2, y: s*0.16,
-            width: s*0.6, height: s*0.56),
-            xRadius: s*0.22, yRadius: s*0.22).fill()
+                             accent: NSColor, outfit: Outfit) {
+        let cell = s / CGFloat(CritterSprite.dim)
+        paint(CritterSprite.base, cell: cell) {
+            $0 == "B" ? body : ($0 == "K" ? .black : nil)
+        }
+        if let overlay = CritterSprite.outfits[outfit] {
+            paint(overlay, cell: cell) { $0 == "A" ? accent : nil }
+        }
+    }
 
-        NSBezierPath(rect: NSRect(x: s*0.3, y: s*0.08,   // legs
-            width: s*0.1, height: s*0.12)).fill()
-        NSBezierPath(rect: NSRect(x: s*0.6, y: s*0.08,
-            width: s*0.1, height: s*0.12)).fill()
-
-        NSColor.black.setFill()              // eyes
-        let e = s * 0.1
-        NSBezierPath(ovalIn: NSRect(x: s*0.36, y: s*0.44,
-            width: e, height: e)).fill()
-        NSBezierPath(ovalIn: NSRect(x: s*0.54, y: s*0.44,
-            width: e, height: e)).fill()
-
-        accent.setFill()                     // outfit hat
-        let hat = NSBezierPath()
-        hat.move(to: NSPoint(x: s*0.5, y: s*0.86))
-        hat.line(to: NSPoint(x: s*0.34, y: s*0.68))
-        hat.line(to: NSPoint(x: s*0.66, y: s*0.68))
-        hat.close()
-        hat.fill()
+    private func paint(_ grid: [String], cell: CGFloat,
+                       color: (Character) -> NSColor?) {
+        let side = cell * CGFloat(CritterSprite.dim)
+        for (r, row) in grid.enumerated() {
+            for (c, ch) in row.enumerated() {
+                guard let col = color(ch) else { continue }
+                col.setFill()
+                let x = CGFloat(c) * cell
+                let y = side - CGFloat(r + 1) * cell
+                NSBezierPath(rect: NSRect(x: x, y: y,
+                    width: cell, height: cell)).fill()
+            }
+        }
     }
 }
