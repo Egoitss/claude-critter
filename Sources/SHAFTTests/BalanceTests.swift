@@ -1,23 +1,25 @@
 import SHAFTCore
 import SHAFTTestKit
 
-func balanceSnap(_ e: ExtraUsage?) -> UsageSnapshot {
-    UsageSnapshot(fiveHour: nil, sevenDay: nil, extraUsage: e)
+func balanceSnap(_ sp: Spend?) -> UsageSnapshot {
+    UsageSnapshot(fiveHour: nil, sevenDay: nil, extraUsage: nil, spend: sp)
 }
 
 func runBalanceTests() {
-    let e = ExtraUsage(isEnabled: true, monthlyLimit: 50,
-        usedCredits: 3.2, utilization: 0.064, currency: "EUR")
-    let line = BalanceLine.resolve(balanceSnap(e))
-    XCTAssertEqual(line, .overage(remaining: 46.8, limit: 50,
+    let sp = Spend(used: Money(amountMinor: 0, currency: "EUR", exponent: 2),
+        limit: Money(amountMinor: 10000, currency: "EUR", exponent: 2),
+        enabled: true)
+    let line = BalanceLine.resolve(balanceSnap(sp))
+    XCTAssertEqual(line, .overage(remaining: 100.0, limit: 100.0,
         currency: "EUR"), "overage resolves when enabled")
-    XCTAssertEqual(line.display, "€46.80 left of €50.00",
+    XCTAssertEqual(line.display, "€100.00 left of €100.00",
         "overage display formats currency")
 
     XCTAssertEqual(BalanceLine.resolve(balanceSnap(nil)), .hidden,
-        "hidden when extraUsage missing")
-    let off = ExtraUsage(isEnabled: false, monthlyLimit: 50,
-        usedCredits: 0, utilization: 0, currency: "EUR")
+        "hidden when spend missing")
+    let off = Spend(used: Money(amountMinor: 0, currency: "EUR", exponent: 2),
+        limit: Money(amountMinor: 10000, currency: "EUR", exponent: 2),
+        enabled: false)
     XCTAssertEqual(BalanceLine.resolve(balanceSnap(off)), .hidden,
         "hidden when disabled")
     XCTAssertNil(BalanceLine.hidden.display, "hidden has no display text")

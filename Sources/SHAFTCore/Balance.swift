@@ -5,11 +5,17 @@ public enum BalanceLine: Equatable {
     case hidden
 
     public static func resolve(_ s: UsageSnapshot) -> BalanceLine {
-        guard let e = s.extraUsage, e.isEnabled,
-              let limit = e.monthlyLimit, let used = e.usedCredits
+        guard let sp = s.spend, sp.enabled,
+              let limitM = sp.limit, let usedM = sp.used
         else { return .hidden }
+        let limit = value(limitM)
+        let used = value(usedM)
         return .overage(remaining: max(0, limit - used), limit: limit,
-                        currency: e.currency ?? "USD")
+                        currency: limitM.currency)
+    }
+
+    static func value(_ m: Money) -> Double {
+        Double(m.amountMinor) / pow(10, Double(m.exponent))
     }
 
     public var display: String? {

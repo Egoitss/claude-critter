@@ -18,7 +18,7 @@ struct FakeToken: TokenSource {
 func runUsageClientTests() async throws {
     let http = FakeHTTP()
     http.data = """
-    {"five_hour":{"utilization":0.9,"resets_at":null}}
+    {"five_hour":{"utilization":90.0,"resets_at":null}}
     """.data(using: .utf8)!
     let client = UsageClient(http: http, tokens: FakeToken())
     let snap = try await client.fetch()
