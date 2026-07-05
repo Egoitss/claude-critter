@@ -11,6 +11,12 @@ public struct CritterRenderer {
     public var depletedColor: NSColor {          // pale grey, "used up"
         NSColor(srgbRed: 0.62, green: 0.60, blue: 0.58, alpha: 1)
     }
+    public var moneyGold: NSColor {              // money bag
+        NSColor(srgbRed: 0.92, green: 0.72, blue: 0.16, alpha: 1)
+    }
+    public var moneyDark: NSColor {              // the $ mark
+        NSColor(srgbRed: 0.35, green: 0.22, blue: 0.05, alpha: 1)
+    }
 
     public func outfitAccent(_ o: Outfit) -> NSColor {
         switch o {
@@ -22,18 +28,19 @@ public struct CritterRenderer {
     }
 
     // usage 0...1: fraction of the body (from the feet up) shown depleted.
-    public func image(usage: Double, outfit: Outfit,
+    public func image(usage: Double, outfit: Outfit, spending: Bool = false,
                       size: CGFloat = 18) -> NSImage {
         let f = min(max(usage, 0), 1)
         return NSImage(size: NSSize(width: size, height: size),
                        flipped: false) { _ in
-            self.drawCritter(size: size, usage: f, outfit: outfit)
+            self.drawCritter(size: size, usage: f, outfit: outfit,
+                             spending: spending)
             return true
         }
     }
 
     private func drawCritter(size s: CGFloat, usage f: Double,
-                             outfit: Outfit) {
+                             outfit: Outfit, spending: Bool) {
         NSGraphicsContext.current?.shouldAntialias = false  // hard pixels
         let n = CGFloat(CritterSprite.dim)
         let cell = max(1, (s / n).rounded(.down))   // integer px/cell
@@ -49,6 +56,13 @@ public struct CritterRenderer {
             let accent = outfitAccent(outfit)
             paint(overlay, cell: cell, offset: offset) { _, ch in
                 ch == "A" ? accent : nil
+            }
+        }
+        if spending {
+            let gold = moneyGold, dark = moneyDark
+            paint(CritterSprite.moneyBag, cell: cell, offset: offset) {
+                _, ch in
+                ch == "M" ? gold : (ch == "D" ? dark : nil)
             }
         }
     }

@@ -8,14 +8,14 @@ import SHAFTCore
 let renderer = CritterRenderer()
 // (label, usage 0...1, outfit). First four show outfits at low usage; the
 // last four show the fable critter filling grey from the feet by usage.
-let tiles: [(String, Double, Outfit)] = [
-    ("opus", 0.15, .crown),
-    ("sonnet", 0.15, .headphones),
-    ("haiku", 0.15, .headband),
-    ("fable 0%", 0.0, .wizardHat),
-    ("fable 40%", 0.4, .wizardHat),
-    ("fable 75%", 0.75, .wizardHat),
-    ("fable 100%", 1.0, .wizardHat),
+let tiles: [(String, Double, Outfit, Bool)] = [
+    ("opus", 0.15, .crown, false),
+    ("sonnet", 0.15, .headphones, false),
+    ("haiku", 0.15, .headband, false),
+    ("fable 0%", 0.0, .wizardHat, false),
+    ("fable 75%", 0.75, .wizardHat, false),
+    ("fable 100%", 1.0, .wizardHat, false),
+    ("fable $", 0.3, .wizardHat, true),
 ]
 
 let tile: CGFloat = 144
@@ -36,7 +36,7 @@ NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
 NSColor(white: 0.12, alpha: 1).setFill()            // app-like dark bg
 NSRect(x: 0, y: 0, width: CGFloat(w), height: CGFloat(h)).fill()
 for (i, t) in tiles.enumerated() {
-    renderer.image(usage: t.1, outfit: t.2, size: tile)
+    renderer.image(usage: t.1, outfit: t.2, spending: t.3, size: tile)
         .draw(at: NSPoint(x: CGFloat(i) * tile, y: 0),
               from: .zero, operation: .sourceOver, fraction: 1)
 }
