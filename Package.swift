@@ -17,5 +17,7 @@ let package = Package(
         .executableTarget(
             name: "SHAFTTests",
             dependencies: ["SHAFTCore", "SHAFTTestKit"]),
+        .executableTarget(
+            name: "SpritePreview", dependencies: ["SHAFTCore"]),
     ]
 )

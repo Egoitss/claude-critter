@@ -38,24 +38,29 @@ public struct CritterRenderer {
 
     private func drawCritter(size s: CGFloat, body: NSColor,
                              accent: NSColor, outfit: Outfit) {
-        let cell = s / CGFloat(CritterSprite.dim)
-        paint(CritterSprite.base, cell: cell) {
+        NSGraphicsContext.current?.shouldAntialias = false  // hard pixels
+        let n = CGFloat(CritterSprite.dim)
+        let cell = max(1, (s / n).rounded(.down))   // integer px/cell
+        let offset = ((s - cell * n) / 2).rounded(.down)   // center it
+        paint(CritterSprite.base, cell: cell, offset: offset) {
             $0 == "B" ? body : ($0 == "K" ? .black : nil)
         }
         if let overlay = CritterSprite.outfits[outfit] {
-            paint(overlay, cell: cell) { $0 == "A" ? accent : nil }
+            paint(overlay, cell: cell, offset: offset) {
+                $0 == "A" ? accent : nil
+            }
         }
     }
 
-    private func paint(_ grid: [String], cell: CGFloat,
+    private func paint(_ grid: [String], cell: CGFloat, offset: CGFloat,
                        color: (Character) -> NSColor?) {
-        let side = cell * CGFloat(CritterSprite.dim)
+        let n = CritterSprite.dim
         for (r, row) in grid.enumerated() {
             for (c, ch) in row.enumerated() {
                 guard let col = color(ch) else { continue }
                 col.setFill()
-                let x = CGFloat(c) * cell
-                let y = side - CGFloat(r + 1) * cell
+                let x = offset + CGFloat(c) * cell
+                let y = offset + CGFloat(n - 1 - r) * cell
                 NSBezierPath(rect: NSRect(x: x, y: y,
                     width: cell, height: cell)).fill()
             }
