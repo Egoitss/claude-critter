@@ -29,21 +29,37 @@ public struct CritterRenderer {
                       size: CGFloat = 18) -> NSImage {
         let body = moodTint(mood); let accent = outfitAccent(outfit)
         return NSImage(size: NSSize(width: size, height: size),
-                       flipped: false) { rect in
-            body.setFill()
-            let b = NSBezierPath(roundedRect: rect.insetBy(dx: 2, dy: 3),
-                xRadius: 2, yRadius: 2)
-            b.fill()
-            NSColor.black.setFill()          // two eyes
-            let e = size * 0.12
-            NSBezierPath(ovalIn: NSRect(x: size*0.34, y: size*0.5,
-                width: e, height: e)).fill()
-            NSBezierPath(ovalIn: NSRect(x: size*0.56, y: size*0.5,
-                width: e, height: e)).fill()
-            accent.setFill()                 // accessory bar = outfit
-            NSBezierPath(rect: NSRect(x: size*0.25, y: size*0.78,
-                width: size*0.5, height: size*0.12)).fill()
+                       flipped: false) { _ in
+            self.drawCritter(size: size, body: body, accent: accent)
             return true
         }
+    }
+
+    private func drawCritter(size s: CGFloat, body: NSColor,
+                             accent: NSColor) {
+        body.setFill()                       // body
+        NSBezierPath(roundedRect: NSRect(x: s*0.2, y: s*0.16,
+            width: s*0.6, height: s*0.56),
+            xRadius: s*0.22, yRadius: s*0.22).fill()
+
+        NSBezierPath(rect: NSRect(x: s*0.3, y: s*0.08,   // legs
+            width: s*0.1, height: s*0.12)).fill()
+        NSBezierPath(rect: NSRect(x: s*0.6, y: s*0.08,
+            width: s*0.1, height: s*0.12)).fill()
+
+        NSColor.black.setFill()              // eyes
+        let e = s * 0.1
+        NSBezierPath(ovalIn: NSRect(x: s*0.36, y: s*0.44,
+            width: e, height: e)).fill()
+        NSBezierPath(ovalIn: NSRect(x: s*0.54, y: s*0.44,
+            width: e, height: e)).fill()
+
+        accent.setFill()                     // outfit hat
+        let hat = NSBezierPath()
+        hat.move(to: NSPoint(x: s*0.5, y: s*0.86))
+        hat.line(to: NSPoint(x: s*0.34, y: s*0.68))
+        hat.line(to: NSPoint(x: s*0.66, y: s*0.68))
+        hat.close()
+        hat.fill()
     }
 }

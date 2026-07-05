@@ -1,11 +1,21 @@
 import AppKit
 
+/// An `NSImageView` that initiates a real window drag on mouse-down,
+/// since `isMovableByWindowBackground` is unreliable for a
+/// `.nonactivatingPanel`. Right-click still opens `.menu` normally,
+/// since `rightMouseDown` is untouched.
+final class PetView: NSImageView {
+    override func mouseDown(with event: NSEvent) {
+        window?.performDrag(with: event)
+    }
+}
+
 /// A small always-on-top floating panel that shows the critter as a
 /// draggable desktop pet, mirroring the menu-bar icon and its controls.
 final class PetWindow {
     private static let side: CGFloat = 96
     private let panel: NSPanel
-    private let imageView = NSImageView()
+    private let imageView = PetView()
 
     init() {
         let side = Self.side
@@ -27,12 +37,17 @@ final class PetWindow {
         imageView.imageScaling = .scaleProportionallyUpOrDown
         panel.contentView = imageView
 
-        if let visible = NSScreen.main?.visibleFrame {
-            let x = visible.maxX - side - 24
-            let y = visible.minY + 24
-            panel.setFrameOrigin(NSPoint(x: x, y: y))
-        }
+        positionBottomRight(side: side)
         panel.orderFrontRegardless()
+    }
+
+    private func positionBottomRight(side: CGFloat) {
+        guard let visible =
+            (NSScreen.main ?? NSScreen.screens.first)?.visibleFrame
+        else { return }
+        let x = visible.maxX - side - 24
+        let y = visible.minY + 24
+        panel.setFrameOrigin(NSPoint(x: x, y: y))
     }
 
     func update(image: NSImage, menu: NSMenu) {
