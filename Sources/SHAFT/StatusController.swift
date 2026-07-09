@@ -4,6 +4,7 @@ final class StatusController: NSObject {
     private let item = NSStatusBar.system.statusItem(
         withLength: NSStatusItem.variableLength)
     private let renderer = CritterRenderer()
+    private let gaugeRenderer = GaugeRenderer()
     private let pet = PetWindow()
     private let tmux = TmuxController(runner: ProcessCommandRunner())
     private let client = UsageClient(http: URLSessionHTTP(),
@@ -22,18 +23,25 @@ final class StatusController: NSObject {
         render(); refresh()
     }
     private func render() {
-        let spending = balance != nil          // extra-usage / API in play
+        let spending = balance != nil
         item.button?.image = renderer.image(
-            usage: usage, outfit: model.outfit, spending: spending)
+            outfit: model.outfit, spending: spending)
+        let critter = renderer.image(
+            outfit: model.outfit, spending: spending, size: 96)
+        let gauge = gaugeRenderer.image(
+            usage: usage, fill: gaugeFill(model), width: 96, u: 3)
         item.menu = buildMenu()
-        pet.update(
-            image: renderer.image(usage: usage, outfit: model.outfit,
-                                  spending: spending, size: 96),
-            menu: buildMenu())
+        pet.update(image: critter, gauge: gauge, menu: buildMenu())
+    }
+
+    private func gaugeFill(_ m: ClaudeModel) -> NSColor {
+        m == .fable ? renderer.color(for: .yellow)
+                    : renderer.color(for: .body)
     }
     private func buildMenu() -> NSMenu {
         let m = NSMenu()
         m.addItem(info("Model: \(model.displayName)"))
+        m.addItem(info("Usage: \(Int((usage * 100).rounded()))%"))
         m.addItem(info(balance ?? "Extra usage: off"))
         m.addItem(.separator())
         let sessions = tmux.controllableSessions()
