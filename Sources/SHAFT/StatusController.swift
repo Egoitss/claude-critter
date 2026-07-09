@@ -28,16 +28,11 @@ final class StatusController: NSObject {
             outfit: model.outfit, spending: spending)
         let critter = renderer.image(
             outfit: model.outfit, spending: spending, size: 96)
-        let gauge = gaugeRenderer.image(
-            usage: usage, fill: gaugeFill(model), width: 96, u: 3)
+        let gauge = gaugeRenderer.image(usage: usage, width: 96, u: 3)
         item.menu = buildMenu()
         pet.update(image: critter, gauge: gauge, menu: buildMenu())
     }
 
-    private func gaugeFill(_ m: ClaudeModel) -> NSColor {
-        m == .fable ? renderer.color(for: .yellow)
-                    : renderer.color(for: .body)
-    }
     private func buildMenu() -> NSMenu {
         let m = NSMenu()
         m.addItem(info("Model: \(model.displayName)"))
