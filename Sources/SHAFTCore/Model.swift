@@ -4,7 +4,9 @@ public enum SHAFTCore {
     public static let version = "0.1.0"
 }
 
-public enum Outfit { case crown, headphones, headband, wizardHat }
+public enum Outfit: CaseIterable {
+    case crown, headphones, headband, wizardHat
+}
 
 public enum ClaudeModel: String, CaseIterable {
     case opus, sonnet, haiku, fable

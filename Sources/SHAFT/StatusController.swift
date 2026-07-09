@@ -24,10 +24,10 @@ final class StatusController: NSObject {
     private func render() {
         let spending = balance != nil          // extra-usage / API in play
         item.button?.image = renderer.image(
-            usage: usage, outfit: model.outfit, spending: spending)
+            outfit: model.outfit, spending: spending)
         item.menu = buildMenu()
         pet.update(
-            image: renderer.image(usage: usage, outfit: model.outfit,
+            image: renderer.image(outfit: model.outfit,
                                   spending: spending, size: 96),
             menu: buildMenu())
     }

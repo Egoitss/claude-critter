@@ -36,7 +36,7 @@ NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
 NSColor(white: 0.12, alpha: 1).setFill()            // app-like dark bg
 NSRect(x: 0, y: 0, width: CGFloat(w), height: CGFloat(h)).fill()
 for (i, t) in tiles.enumerated() {
-    renderer.image(usage: t.1, outfit: t.2, spending: t.3, size: tile)
+    renderer.image(outfit: t.2, spending: t.3, size: tile)
         .draw(at: NSPoint(x: CGFloat(i) * tile, y: 0),
               from: .zero, operation: .sourceOver, fraction: 1)
 }
