@@ -14,16 +14,18 @@ final class PetView: NSImageView {
 /// draggable desktop pet, mirroring the menu-bar icon and its controls.
 final class PetWindow {
     private static let side: CGFloat = 96
+    private static let gaugeH: CGFloat = 24
     private let panel: NSPanel
     private let imageView = PetView()
+    private let gaugeView = PetView()
 
     init() {
         let side = Self.side
+        let h = side + Self.gaugeH
         panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: side, height: side),
+            contentRect: NSRect(x: 0, y: 0, width: side, height: h),
             styleMask: [.borderless, .nonactivatingPanel],
-            backing: .buffered,
-            defer: false)
+            backing: .buffered, defer: false)
         panel.level = .floating
         panel.isOpaque = false
         panel.backgroundColor = .clear
@@ -32,11 +34,17 @@ final class PetWindow {
         panel.collectionBehavior = [
             .canJoinAllSpaces, .fullScreenAuxiliary,
         ]
-
-        imageView.frame = NSRect(x: 0, y: 0, width: side, height: side)
+        let content = NSView(
+            frame: NSRect(x: 0, y: 0, width: side, height: h))
+        imageView.frame = NSRect(
+            x: 0, y: Self.gaugeH, width: side, height: side)
         imageView.imageScaling = .scaleProportionallyUpOrDown
-        panel.contentView = imageView
-
+        gaugeView.frame = NSRect(
+            x: 0, y: 0, width: side, height: Self.gaugeH)
+        gaugeView.imageScaling = .scaleProportionallyUpOrDown
+        content.addSubview(imageView)
+        content.addSubview(gaugeView)
+        panel.contentView = content
         positionBottomRight(side: side)
         panel.orderFrontRegardless()
     }
@@ -50,9 +58,11 @@ final class PetWindow {
         panel.setFrameOrigin(NSPoint(x: x, y: y))
     }
 
-    func update(image: NSImage, menu: NSMenu) {
+    func update(image: NSImage, gauge: NSImage, menu: NSMenu) {
         imageView.image = image
         imageView.menu = menu
+        gaugeView.image = gauge
+        gaugeView.menu = menu
     }
 
     func setVisible(_ v: Bool) {

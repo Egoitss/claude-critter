@@ -19,9 +19,10 @@ let tiles: [(String, Double, Outfit, Bool)] = [
 ]
 
 let tile: CGFloat = 144
+let gaugeH = 40
 let cols = tiles.count
 let w = Int(tile) * cols
-let h = Int(tile)
+let h = Int(tile) + gaugeH
 
 guard let rep = NSBitmapImageRep(
     bitmapDataPlanes: nil, pixelsWide: w, pixelsHigh: h,
@@ -35,9 +36,15 @@ NSGraphicsContext.saveGraphicsState()
 NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
 NSColor(white: 0.12, alpha: 1).setFill()            // app-like dark bg
 NSRect(x: 0, y: 0, width: CGFloat(w), height: CGFloat(h)).fill()
+let gaugeR = GaugeRenderer()
 for (i, t) in tiles.enumerated() {
     renderer.image(outfit: t.2, spending: t.3, size: tile)
-        .draw(at: NSPoint(x: CGFloat(i) * tile, y: 0),
+        .draw(at: NSPoint(x: CGFloat(i) * tile, y: CGFloat(gaugeH)),
+              from: .zero, operation: .sourceOver, fraction: 1)
+    let fill = (t.2 == .wizardHat)
+        ? renderer.color(for: .yellow) : renderer.color(for: .body)
+    gaugeR.image(usage: t.1, fill: fill, width: tile - 16, u: 4)
+        .draw(at: NSPoint(x: CGFloat(i) * tile + 8, y: 6),
               from: .zero, operation: .sourceOver, fraction: 1)
 }
 NSGraphicsContext.restoreGraphicsState()
