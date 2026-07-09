@@ -1,51 +1,43 @@
-# SHAFT — 128×128 square base redesign
+# SHAFT — 128×128 square redesign (base + all outfits + gauge)
 
 ## Goal
 
-Adopt the reshaped SHAFT critter (drawn at 128×128 in `SHAFT.pixil`) as the
-new **base** sprite: a square body with wide-set eyes, side ears, four legs,
-and a gem-tipped crown. Keep the existing hand-authored char-grid renderer.
-Other outfit designs ("the rest") follow later as their own pixil files.
+Adopt the reshaped SHAFT critter and its full outfit set (drawn at 128×128
+in five `*.pixil` files) into the app. One shared square base body; four
+model outfits; a money-bag "spending" overlay; and a new heart + progress-bar
+usage gauge. Keep the hand-authored char-grid renderer, extended to
+multi-color overlays.
 
-## Scope
+## Source art (all share one identical base body)
 
-In scope now:
+| Pixil | Model / state | Outfit |
+|-------|---------------|--------|
+| `SHAFT.pixil` | Opus | crown: yellow + red gem-tips |
+| `shaft_sonet.pixil` | Sonnet | headphones: blue band, cups, wire, player |
+| `shaft_haiku.pixil` | Haiku | headband: green band + knot-tails |
+| `shaft_fable.pixil` | Fable | wizard hat: blue, scattered yellow stars |
+| `money_bag_shaft.pixil` | spending | brown sack + yellow `$` (no headwear) |
 
-- Redraw `CritterSprite.base` to the new square silhouette.
-- Grow the grid to a **20×20 square** (`dim = 20`).
-- Reposition the `.crown` overlay onto the new head; give it **red
-  gem-tips** via a new secondary outfit accent color.
-- Repad the other three outfits + the money bag to 20 rows and nudge them
-  onto the new body as **functional placeholders** (refined later).
+## Decisions (locked)
 
-Out of scope (deferred — "rest will follow"):
+- Grid: **20×20 square** (`dim = 20`). Char-grid kept.
+- Outfits: **char-grid with an expanded, per-outfit color palette** — fine
+  details (wire, stars, player) are faithful approximations, not pixel-exact.
+- Usage: **heart + horizontal progress bar** replaces the grey body-fill.
+  The body renders solid; the bar shows live usage % below the critter.
+- Body color: **terracotta kept** (the vivid orange is only the pixil
+  palette). See Open Points — worth a second look now all art is orange.
 
-- Final art for `.headphones`, `.headband`, `.wizardHat`.
-- The heart + literal "50%" progress bar shown at the bottom of the pixil.
-  Usage stays represented as the grey body-fill gauge.
-- Changing the body color. It stays terracotta; the vivid orange is only
-  the pixil palette, not the rendered color.
+## Renderer constraint
 
-## Renderer constraints (must hold)
+`Critter.swift` assumes a square `dim × dim` grid (`paint()` flips y with
+`n - 1 - r`, `cell = size / dim`). Every critter grid — `base` + all
+overlays — MUST be exactly 20 rows.
 
-From `Critter.swift`: the grid is assumed **square `dim × dim`**. `paint()`
-flips y with `n - 1 - r` where `n = dim`, and `cell = size / dim`. Therefore
-**every** grid — `base`, all four `outfits`, and `moneyBag` — MUST have
-exactly `dim` (=20) rows, or overlays misalign. `bodyRowRange` is computed
-dynamically (rows containing `B`/`K`), so the grey usage gauge adapts to the
-new shape with no extra work.
+## A. Base grid (20×20)
 
-## Grid legend
-
-`.` empty · `B` body (usage-colored) · `K` eye (black) · `A` outfit accent
-(primary) · `G` outfit gem (secondary accent) · `M`/`D` money bag.
-
-`G` is new. Only the crown uses it today.
-
-## New base grid (20×20)
-
-Rows 0–2 empty (crown/hat zone); head 3–5; eyes 6–7; ear bulge row 8;
-torso 9–13; four legs rows 14–19.
+Rows 0–2 empty (crown/hat zone); head 3–5; eyes 6–7; ear bulge row 8; torso
+9–13; four legs 14–19. Legend: `.` empty · `B` body · `K` eye.
 
 ```
 ....................
@@ -70,58 +62,80 @@ BBBBBBBBBBBBBBBBBBBB
 ..BB..BB....BB..BB..
 ```
 
-## Crown overlay (rows 0–2, rest empty)
+The body is a single solid color (no depleted/grey rows).
 
-```
-.....G...G...G......
-....AAA.AAA.AAA.....
-....AAAAAAAAAAAA....
-```
+## B. Outfit model (generalized)
 
-`A` → yellow (`outfitAccent(.crown)`), `G` → red gem tips (new secondary).
-
-## Secondary accent color (model change)
-
-Add to `CritterRenderer`:
+Replace the single-accent model with per-outfit palettes.
 
 ```swift
-// Secondary outfit accent (e.g. crown gems). nil = outfit has none.
-public func outfitAccent2(_ o: Outfit) -> NSColor? {
-    switch o {
-    case .crown: return .systemRed
-    default: return nil
-    }
+// SHAFTCore — color keys (no AppKit dependency here)
+public enum SpriteInk {
+    case body, eye, yellow, red, blue, green, hatBlue, star, brown, white
+}
+public struct OutfitSprite {          // one overlay
+    public let rows: [String]         // 20 rows
+    public let ink: [Character: SpriteInk]
 }
 ```
 
-In `drawCritter`, the outfit paint closure maps `A` → `outfitAccent(o)` and
-`G` → `outfitAccent2(o)` (skip `G` when nil). No change to `paint()` itself.
+`CritterSprite.outfits: [Outfit: OutfitSprite]` and
+`CritterSprite.moneyBag: OutfitSprite`. `Critter.swift` maps `SpriteInk` →
+`NSColor` in one switch and drops `outfitAccent`/`outfitAccent2`.
 
-## Other overlays (placeholders, 20 rows each)
+Per-outfit symbols (exact grids quantized from the pixils, then hand-tuned
+in `SpritePreview` during implementation):
 
-`.headphones`, `.headband`, `.wizardHat`, and `moneyBag` are repadded to 20
-rows and repositioned onto the new head/body so the build renders correctly.
-Their art is intentionally rough — refined when the matching pixils arrive.
+- **crown** `A`→yellow, `G`→red — worked example:
+  ```
+  .....G...G...G......
+  ....AAA.AAA.AAA.....
+  ....AAAAAAAAAAAA....
+  ```
+  (rows 3–19 empty)
+- **headphones** `H`→blue (band + side cups), `P`→white (player), short
+  `H` wire — approximated.
+- **headband** `N`→green (forehead band + knot-tails on the right).
+- **wizard** `Z`→hatBlue (draped hat), `S`→yellow (a handful of stars).
+- **moneyBag** `M`→brown (sack), `D`→yellow (`$`), lower-right of the body.
 
-## Render size (menu-bar icon)
+## C. Usage gauge (heart + bar) — new, code-drawn
 
-The menu-bar icon renders at the default `size` (currently `18`).
-`cell = floor(size / dim)`, so `18 / 20 = 0` → clamps to 1px cells and the
-20-cell sprite is clipped by 2px. Fix: bump `image()`'s default `size` to
-`CGFloat(CritterSprite.dim)` (=20) so the menu-bar icon fits. The pet
-window (96) and `SpritePreview` tile are unaffected.
+Dynamic, so drawn programmatically (not a static grid):
+
+- red heart bitmap (~5×5) at the left,
+- a bar: outlined rect, filled left-to-right to `usage` (orange fill, white
+  remainder),
+- `NN%` via a tiny 3×5 pixel-digit font (`0–9` + `%`) at the right.
+
+Rendered **below the critter in the floating pet window**, which grows to fit
+(≈96 wide × ≈116 tall). The **menu-bar icon stays critter-only** (too small
+for a bar); usage there remains a menu text line. `depletedColor` /
+`greyFromRow` / body-fill logic is removed.
+
+## Decomposition (one plan, three phases)
+
+1. Base + `dim=20` + solid body (remove grey-fill).
+2. Outfit model generalization + four outfit grids + money bag.
+3. Usage gauge + pet-window layout + menu-bar/menu wiring.
 
 ## Testing / verification
 
-- `swift build` — compiles (grid row-count invariant holds).
-- `swift run SpritePreview` → Read `~/Downloads/shaft-preview.png`; confirm
-  base + crown match `SHAFT.pixil`. Iterate grids until faithful.
-- `swift run SHAFTTests` — GREEN line `checks: N, failures: 0`. No test
-  hard-codes `dim`; `CritterTests` asks for an explicit `size: 18` image
-  and checks only `img.size`, and the gauge test uses dynamic
-  `bodyRowRange` — both stay valid. Add a `G`/`outfitAccent2` assertion.
+- `swift build`; `swift run SpritePreview` → Read the PNG, compare to each
+  pixil, iterate grids.
+- `swift run SHAFTTests` → GREEN `checks: N, failures: 0`. Update
+  `CritterTests` (drop accent/gauge-row assertions; add `SpriteInk`
+  mapping + gauge % checks). Bump default `image()` size to `dim` so the
+  menu-bar icon (20 cells) isn't clipped.
+
+## Open points for review
+
+- **Body color**: every pixil is orange `#ff7e00`; keeping terracotta means
+  the app matches none of the new art. Reconsider?
+- **Fable extras**: the wizard pixil also has yellow leg-bands + a yellow
+  bar fill + a face-wisp. Include, or hat-only for now?
+- **Live digits** in the gauge: include the 3×5 font, or bar + heart only?
 
 ## Conventions
 
-Files ≤300 lines, lines ≤80 cols. `Sprite.swift` grows but stays under 300.
-Zero new dependencies.
+Files ≤300 lines, lines ≤80 cols, Markdown ≤150. Zero new dependencies.
