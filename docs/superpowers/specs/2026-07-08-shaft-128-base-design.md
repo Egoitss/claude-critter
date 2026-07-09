@@ -25,8 +25,12 @@ multi-color overlays.
   details (wire, stars, player) are faithful approximations, not pixel-exact.
 - Usage: **heart + horizontal progress bar** replaces the grey body-fill.
   The body renders solid; the bar shows live usage % below the critter.
-- Body color: **terracotta kept** (the vivid orange is only the pixil
-  palette). See Open Points — worth a second look now all art is orange.
+- Body color: **orange `#ff7e00`** — match the art across all designs
+  (replaces the old terracotta `bodyColor`).
+- **Fable** renders its full pixil: draped starry hat **plus** yellow
+  leg-bands, a face-wisp, and a **yellow** gauge-bar fill (other models fill
+  orange). The gauge fill color is model-dependent.
+- Gauge shows **live `NN%` digits** via a 3×5 pixel font.
 
 ## Renderer constraint
 
@@ -96,7 +100,8 @@ in `SpritePreview` during implementation):
 - **headphones** `H`→blue (band + side cups), `P`→white (player), short
   `H` wire — approximated.
 - **headband** `N`→green (forehead band + knot-tails on the right).
-- **wizard** `Z`→hatBlue (draped hat), `S`→yellow (a handful of stars).
+- **wizard** `Z`→hatBlue (draped hat), `S`→yellow (stars), plus yellow
+  leg-bands + face-wisp cells; Fable's gauge fill is yellow.
 - **moneyBag** `M`→brown (sack), `D`→yellow (`$`), lower-right of the body.
 
 ## C. Usage gauge (heart + bar) — new, code-drawn
@@ -104,8 +109,8 @@ in `SpritePreview` during implementation):
 Dynamic, so drawn programmatically (not a static grid):
 
 - red heart bitmap (~5×5) at the left,
-- a bar: outlined rect, filled left-to-right to `usage` (orange fill, white
-  remainder),
+- a bar: outlined rect, filled left-to-right to `usage` (fill = orange, or
+  yellow for Fable; white remainder),
 - `NN%` via a tiny 3×5 pixel-digit font (`0–9` + `%`) at the right.
 
 Rendered **below the critter in the floating pet window**, which grows to fit
@@ -127,14 +132,6 @@ for a bar); usage there remains a menu text line. `depletedColor` /
   `CritterTests` (drop accent/gauge-row assertions; add `SpriteInk`
   mapping + gauge % checks). Bump default `image()` size to `dim` so the
   menu-bar icon (20 cells) isn't clipped.
-
-## Open points for review
-
-- **Body color**: every pixil is orange `#ff7e00`; keeping terracotta means
-  the app matches none of the new art. Reconsider?
-- **Fable extras**: the wizard pixil also has yellow leg-bands + a yellow
-  bar fill + a face-wisp. Include, or hat-only for now?
-- **Live digits** in the gauge: include the 3×5 font, or bar + heart only?
 
 ## Conventions
 
