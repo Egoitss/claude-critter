@@ -10,7 +10,9 @@ let package = Package(
     name: "SHAFT",
     platforms: [.macOS(.v13)],
     targets: [
-        .target(name: "SHAFTCore"),
+        .target(
+            name: "SHAFTCore",
+            resources: [.process("Resources")]),
         .target(name: "SHAFTTestKit"),
         .executableTarget(
             name: "SHAFT", dependencies: ["SHAFTCore"]),
