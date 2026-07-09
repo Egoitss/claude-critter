@@ -51,10 +51,11 @@ public struct GaugeRenderer {
         let barY = 1.5 * u, barH = 4 * u
         ink.setFill()
         NSBezierPath(rect: NSRect(x: barX, y: barY,
-            width: barR - barX, height: barH)).fill()
+            width: max(0, barR - barX), height: barH)).fill()
         NSColor.white.setFill()
         let inX = barX + u, inY = barY + u
-        let inW = (barR - barX) - 2 * u, inH = barH - 2 * u
+        let inW = max(0, (barR - barX) - 2 * u)
+        let inH = barH - 2 * u
         NSBezierPath(rect: NSRect(x: inX, y: inY,
             width: inW, height: inH)).fill()
         fill.setFill()
