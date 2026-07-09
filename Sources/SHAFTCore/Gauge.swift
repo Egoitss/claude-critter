@@ -14,7 +14,7 @@ public struct GaugeRenderer {
     public func image(usage: Double, width: CGFloat, u: CGFloat) -> NSImage {
         let size = NSSize(width: width, height: 7 * u)
         return NSImage(size: size, flipped: false) { _ in
-            self.draw(usage: usage, u: u)
+            self.draw(usage: usage, width: width, u: u)
             return true
         }
     }
@@ -34,13 +34,17 @@ public struct GaugeRenderer {
         }
     }
 
-    private func draw(usage f: Double, u: CGFloat) {
+    private func draw(usage f: Double, width: CGFloat, u: CGFloat) {
         NSGraphicsContext.current?.shouldAntialias = false
         let red = NSColor(srgbRed: 0.929, green: 0.11,
                           blue: 0.141, alpha: 1)
-        // heart at the far left, NN% (white) one cell to its right
-        blit(PixelFont.heart, x: 0, y: u, u: u, color: red)
-        blit(PixelFont.text(percentText(f)), x: 6 * u, y: u,
-             u: u, color: .white)
+        // show remaining budget (100% - used), not the used amount
+        let text = PixelFont.text(percentText(1 - f))
+        let textW = CGFloat(text.first?.count ?? 0)
+        // center the heart(5) + 1-cell gap + text group in the strip
+        let groupW = (6 + textW) * u
+        let x0 = ((width - groupW) / 2).rounded(.down)
+        blit(PixelFont.heart, x: x0, y: u, u: u, color: red)
+        blit(text, x: x0 + 6 * u, y: u, u: u, color: .white)
     }
 }

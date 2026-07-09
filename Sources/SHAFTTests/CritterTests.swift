@@ -4,13 +4,17 @@ import SHAFTTestKit
 
 func runCritterTests() {
     let r = CritterRenderer()
-    let img = r.image(outfit: .crown, size: 40)
-    XCTAssertEqual(img.size, NSSize(width: 40, height: 40), "size honored")
-    XCTAssertEqual(r.dimension, 20, "square grid is 20")
-    XCTAssertTrue(r.gridsAreSquare(), "every grid is 20x20")
-    XCTAssertEqual(CritterRenderer().color(for: .body),
-        CritterRenderer().color(for: .body), "body color stable")
-    XCTAssertTrue(r.hasOutfit(.headphones), "headphones present")
-    XCTAssertTrue(r.hasOutfit(.headband), "headband present")
-    XCTAssertTrue(r.hasOutfit(.wizardHat), "wizard present")
+
+    // Every bundled asset (base + all outfits + money bag) must load.
+    XCTAssertTrue(r.assetsLoad(), "all critter art assets load")
+
+    // Rendered image honors the requested size.
+    let img = r.image(outfit: .crown, size: 128)
+    XCTAssertEqual(img.size, NSSize(width: 128, height: 128),
+        "image has requested size")
+
+    // Spending overlay does not change the image dimensions.
+    let spend = r.image(outfit: .wizardHat, spending: true, size: 96)
+    XCTAssertEqual(spend.size, NSSize(width: 96, height: 96),
+        "spending image has requested size")
 }

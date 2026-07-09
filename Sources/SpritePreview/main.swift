@@ -6,8 +6,8 @@ import SHAFTCore
 // Default output: ~/Downloads/shaft-preview.png
 
 let renderer = CritterRenderer()
-// (label, usage 0...1, outfit). First four show outfits at low usage; the
-// last four show the fable critter filling grey from the feet by usage.
+// (label, usage 0...1, outfit, spending). Each tile draws the composited
+// pixel art (base + outfit + optional money bag) with the gauge below.
 let tiles: [(String, Double, Outfit, Bool)] = [
     ("opus", 0.15, .crown, false),
     ("sonnet", 0.15, .headphones, false),
@@ -18,7 +18,7 @@ let tiles: [(String, Double, Outfit, Bool)] = [
     ("fable $", 0.3, .wizardHat, true),
 ]
 
-let tile: CGFloat = 144
+let tile: CGFloat = 128            // 1:1 with the source art (crisp)
 let gaugeH = 40
 let cols = tiles.count
 let w = Int(tile) * cols

@@ -25,10 +25,10 @@ final class StatusController: NSObject {
     private func render() {
         let spending = balance != nil
         item.button?.image = renderer.image(
-            outfit: model.outfit, spending: spending)
+            outfit: model.outfit, spending: spending, size: 22)
         let critter = renderer.image(
-            outfit: model.outfit, spending: spending, size: 96)
-        let gauge = gaugeRenderer.image(usage: usage, width: 96, u: 3)
+            outfit: model.outfit, spending: spending, size: 128)
+        let gauge = gaugeRenderer.image(usage: usage, width: 128, u: 4)
         item.menu = buildMenu()
         pet.update(image: critter, gauge: gauge, menu: buildMenu())
     }

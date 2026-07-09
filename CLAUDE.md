@@ -3,10 +3,10 @@
 Guidance for Claude Code working in this repo.
 
 SHAFT is a macOS menu-bar app + floating desktop pet: a pixel critter whose
-outfit shows the active Claude model, with a heart + progress-bar gauge below
-it showing plan usage, and who holds a money bag when paid credits are being
-spent. It switches the model of a **running** Claude Code session via a tmux
-bridge.
+outfit shows the active Claude model, with a heart + remaining-% readout
+below it for plan usage, and who holds a money bag when paid credits are
+being spent. It switches the model of a **running** Claude Code session via a
+tmux bridge.
 
 ## Build / run / test
 
@@ -31,8 +31,9 @@ register it in `Sources/SHAFTTests/main.swift` above `xctReport()`.
   protocols (`CommandRunner`, `HTTPFetching`, `TokenSource`) so logic is
   tested with fakes. Key files: `Model` (model/outfit enums), `Usage` +
   `Balance` (API parsing + money line), `Keychain` + `Command` + `Tmux`
-  (the tmux bridge + token read), `UsageClient` (HTTP), `Critter` + `Sprite`
-  (pixel rendering).
+  (the tmux bridge + token read), `UsageClient` (HTTP), `Critter` (art
+  compositing), `Gauge` + `PixelFont` (usage readout). Pixel art lives in
+  `Sources/SHAFTCore/Resources/` and is bundled via `Bundle.module`.
 - `Sources/SHAFT/` — thin AppKit shell: `main`, `AppDelegate`,
   `StatusController` (NSStatusItem + menu + refresh loop), `PetWindow`
   (floating pet).
@@ -43,20 +44,20 @@ register it in `Sources/SHAFTTests/main.swift` above `xctReport()`.
 
 ## The pixel critter
 
-The sprite is a hand-authored **20×20 square** grid of strings in
-`Sprite.swift`. The `base` uses `.` empty, `B` body, `K` eye. Each outfit is
-an `OutfitSprite` (a 20-row grid + a `Character -> SpriteInk` ink map), so an
-overlay picks its own colors (e.g. crown `A`→yellow, `G`→red gem). The money
-bag is another `OutfitSprite`. `Critter.swift` maps `SpriteInk` → `NSColor`
-and renders with **integer cell size and anti-aliasing off** (crisp pixels;
-never scale a fractional cell factor). The body renders a single solid color.
-Every grid MUST be exactly `dim` (=20) rows of 20 chars (`gridsAreSquare()`),
-since `paint()` flips y by `dim`. To reshape the critter, edit cells in
-`Sprite.swift` and re-run SpritePreview.
+The critter is **128×128 hand-drawn pixel art** (authored in Pixilart),
+shipped as PNGs in `Sources/SHAFTCore/Resources/`: `base.png` (body + eyes),
+one overlay per outfit (`crown`, `headphones`, `headband`, `wizardhat`), and
+`moneybag.png`. `Critter.swift` loads them via `Bundle.module` (cached) and
+composites base + outfit + optional money bag into one `NSImage`, drawing
+with **`imageInterpolation = .none`** so pixels stay crisp at any size.
+`CritterRenderer.image(outfit:spending:size:)` is the entry point;
+`assetsLoad()` asserts every PNG resolves. To change the art, edit the PNGs
+(overlays must stay 128×128 and transparent except their own pixels) and
+re-run SpritePreview.
 
-Plan usage is shown by a separate heart + progress-bar gauge (`Gauge.swift`,
-digits via `PixelFont.swift`) drawn below the critter in the pet window — not
-by shading the body.
+Plan usage is shown by a separate heart + percentage readout (`Gauge.swift`,
+digits via `PixelFont.swift`) drawn below the critter in the pet window. The
+number is **remaining** budget (100% − used), centered next to the heart.
 
 ## Conventions (enforced)
 

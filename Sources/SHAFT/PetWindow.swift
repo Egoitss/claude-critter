@@ -13,8 +13,8 @@ final class PetView: NSImageView {
 /// A small always-on-top floating panel that shows the critter as a
 /// draggable desktop pet, mirroring the menu-bar icon and its controls.
 final class PetWindow {
-    private static let side: CGFloat = 96
-    private static let gaugeH: CGFloat = 24
+    private static let side: CGFloat = 128   // matches the 128px source art
+    private static let gaugeH: CGFloat = 28
     private let panel: NSPanel
     private let imageView = PetView()
     private let gaugeView = PetView()
