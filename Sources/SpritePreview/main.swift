@@ -8,14 +8,14 @@ import SHAFTCore
 let renderer = CritterRenderer()
 // (label, usage 0...1, outfit, spending). Each tile draws the composited
 // pixel art (base + outfit + optional money bag) with the gauge below.
-let tiles: [(String, Double, Outfit, Bool)] = [
+let tiles: [(String, Double?, Outfit, Bool)] = [
     ("opus", 0.15, .crown, false),
     ("sonnet", 0.15, .headphones, false),
     ("haiku", 0.15, .headband, false),
     ("fable 0%", 0.0, .wizardHat, false),
-    ("fable 75%", 0.75, .wizardHat, false),
     ("fable 100%", 1.0, .wizardHat, false),
     ("fable $", 0.3, .wizardHat, true),
+    ("unknown", nil, .crown, false),
 ]
 
 let tile: CGFloat = 128            // 1:1 with the source art (crisp)

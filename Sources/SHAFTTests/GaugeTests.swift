@@ -10,4 +10,7 @@ func runGaugeTests() {
     XCTAssertEqual(g.percentText(1.5), "100%", "clamped high")
     let img = g.image(usage: 0.5, width: 80, u: 4)
     XCTAssertEqual(img.size, NSSize(width: 80, height: 28), "7u tall")
+    let unknown = g.image(usage: nil, width: 80, u: 4)
+    XCTAssertEqual(unknown.size, NSSize(width: 80, height: 28),
+        "unknown gauge still 7u tall")
 }

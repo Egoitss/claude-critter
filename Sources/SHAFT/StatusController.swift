@@ -10,7 +10,8 @@ final class StatusController: NSObject {
     private let client = UsageClient(http: URLSessionHTTP(),
         tokens: SecurityCLITokenSource(runner: ProcessCommandRunner()))
     private var model: ClaudeModel = .opus
-    private var usage: Double = 0
+    private var usage: Double?          // used fraction; nil until fetched
+    private var errorStreak = 0         // consecutive failed fetches
     private var balance: String?
     private var timer: Timer?
     private var target = "claude"
@@ -36,7 +37,8 @@ final class StatusController: NSObject {
     private func buildMenu() -> NSMenu {
         let m = NSMenu()
         m.addItem(info("Model: \(model.displayName)"))
-        m.addItem(info("Usage: \(Int((usage * 100).rounded()))%"))
+        let left = usage.map { "\(Int(((1 - $0) * 100).rounded()))% left" }
+        m.addItem(info("Budget: \(left ?? "unavailable")"))
         m.addItem(info(balance ?? "Extra usage: off"))
         m.addItem(.separator())
         let sessions = tmux.controllableSessions()
@@ -106,8 +108,14 @@ final class StatusController: NSObject {
         Task { @MainActor in
             model = SettingsModel.current() ?? model   // reliable, no tmux
             guard let snap = try? await client.fetch() else {
-                render(); schedule(60); return
+                // Keep the last known reading; back off so we don't add to
+                // the rate limit. Show "unknown" only if we never succeeded.
+                errorStreak += 1
+                render()
+                schedule(min(60 * pow(2, Double(errorStreak - 1)), 600))
+                return
             }
+            errorStreak = 0
             usage = snap.worstFraction
             balance = BalanceLine.resolve(snap).display
             render()
