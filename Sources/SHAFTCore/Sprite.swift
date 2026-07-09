@@ -60,6 +60,17 @@ enum CritterSprite {
             "..................NN",
             e, e, e, e, e, e, e, e, e, e, e, e, e, e,
         ], ink: ["N": .green]),
+        .wizardHat: OutfitSprite(rows: [
+            "....SZZZZZZZZZZS....",
+            "..ZZZSZZZSZZZZZZSZ..",
+            ".ZZZZZZSZZZZSZZZZZZ.",
+            ".ZZZZZZZZZSZZZZSZZZ.",
+            e, e, e, e, e, e, e,
+            "..................S.",
+            e, e, e, e, e,
+            "..SS..SS....SS..SS..",
+            e, e,
+        ], ink: ["Z": .hatBlue, "S": .yellow]),
     ]
 
     static let moneyBag = OutfitSprite(

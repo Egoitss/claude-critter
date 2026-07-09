@@ -12,4 +12,5 @@ func runCritterTests() {
         CritterRenderer().color(for: .body), "body color stable")
     XCTAssertTrue(r.hasOutfit(.headphones), "headphones present")
     XCTAssertTrue(r.hasOutfit(.headband), "headband present")
+    XCTAssertTrue(r.hasOutfit(.wizardHat), "wizard present")
 }
