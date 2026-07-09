@@ -10,4 +10,5 @@ func runCritterTests() {
     XCTAssertTrue(r.gridsAreSquare(), "every grid is 20x20")
     XCTAssertEqual(CritterRenderer().color(for: .body),
         CritterRenderer().color(for: .body), "body color stable")
+    XCTAssertTrue(r.hasOutfit(.headphones), "headphones present")
 }

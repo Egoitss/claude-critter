@@ -44,6 +44,10 @@ public struct CritterRenderer {
         return ok(CritterSprite.moneyBag.rows)
     }
 
+    public func hasOutfit(_ o: Outfit) -> Bool {
+        CritterSprite.outfits[o] != nil
+    }
+
     private func drawCritter(size s: CGFloat, outfit: Outfit,
                              spending: Bool) {
         NSGraphicsContext.current?.shouldAntialias = false

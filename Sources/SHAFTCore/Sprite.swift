@@ -35,6 +35,24 @@ enum CritterSprite {
                    "....AAAAAAAAAAAA...."]
                 + Array(repeating: e, count: 17),
             ink: ["A": .yellow, "G": .red]),
+        .headphones: OutfitSprite(rows: [
+            e,
+            "..HHHHHHHHHHHHHHHH..",
+            ".HH..............HH.",
+            ".H................H.",
+            ".H................H.",
+            ".H................H.",
+            "HHH..............HHH",
+            "HHH..............HHH",
+            "HHH..............HHH",
+            ".HH..............HH.",
+            e,
+            ".................H..",
+            "...............HP...",
+            "..............PPP...",
+            "..............PPP...",
+            e, e, e, e, e,
+        ], ink: ["H": .blue, "P": .white]),
     ]
 
     static let moneyBag = OutfitSprite(
