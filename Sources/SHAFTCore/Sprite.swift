@@ -53,6 +53,13 @@ enum CritterSprite {
             "..............PPP...",
             e, e, e, e, e,
         ], ink: ["H": .blue, "P": .white]),
+        .headband: OutfitSprite(rows: [
+            e, e, e,
+            "..NNNNNNNNNNNNNNNN..",
+            ".................NN.",
+            "..................NN",
+            e, e, e, e, e, e, e, e, e, e, e, e, e, e,
+        ], ink: ["N": .green]),
     ]
 
     static let moneyBag = OutfitSprite(

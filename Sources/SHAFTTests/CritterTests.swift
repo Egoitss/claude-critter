@@ -11,4 +11,5 @@ func runCritterTests() {
     XCTAssertEqual(CritterRenderer().color(for: .body),
         CritterRenderer().color(for: .body), "body color stable")
     XCTAssertTrue(r.hasOutfit(.headphones), "headphones present")
+    XCTAssertTrue(r.hasOutfit(.headband), "headband present")
 }
