@@ -18,6 +18,23 @@ public struct CritterRenderer {
         NSColor(srgbRed: 0.35, green: 0.22, blue: 0.05, alpha: 1)
     }
 
+    public func color(for ink: SpriteInk) -> NSColor {
+        func c(_ r: Double, _ g: Double, _ b: Double) -> NSColor {
+            NSColor(srgbRed: r, green: g, blue: b, alpha: 1)
+        }
+        switch ink {
+        case .body:    return c(1.0, 0.494, 0.0)
+        case .eye:     return .black
+        case .yellow:  return c(1.0, 0.949, 0.0)
+        case .red:     return c(0.929, 0.110, 0.141)
+        case .blue:    return c(0.184, 0.212, 0.600)
+        case .white:   return .white
+        case .green:   return c(0.133, 0.694, 0.298)
+        case .hatBlue: return c(0.302, 0.427, 0.953)
+        case .brown:   return c(0.612, 0.353, 0.235)
+        }
+    }
+
     public func outfitAccent(_ o: Outfit) -> NSColor {
         switch o {
         case .crown: return .systemYellow
