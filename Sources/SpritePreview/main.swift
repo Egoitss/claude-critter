@@ -41,9 +41,7 @@ for (i, t) in tiles.enumerated() {
     renderer.image(outfit: t.2, spending: t.3, size: tile)
         .draw(at: NSPoint(x: CGFloat(i) * tile, y: CGFloat(gaugeH)),
               from: .zero, operation: .sourceOver, fraction: 1)
-    let fill = (t.2 == .wizardHat)
-        ? renderer.color(for: .yellow) : renderer.color(for: .body)
-    gaugeR.image(usage: t.1, fill: fill, width: tile - 16, u: 4)
+    gaugeR.image(usage: t.1, width: tile - 16, u: 4)
         .draw(at: NSPoint(x: CGFloat(i) * tile + 8, y: 6),
               from: .zero, operation: .sourceOver, fraction: 1)
 }
