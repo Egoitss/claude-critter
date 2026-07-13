@@ -59,10 +59,19 @@ public struct UsageSnapshot: Decodable {
         max(fiveHour?.utilization ?? 0, sevenDay?.utilization ?? 0) / 100.0
     }
 
+    /// Thrown when a payload decodes but carries no usage window at all —
+    /// e.g. the API's HTTP-200 rate-limit error body, which would otherwise
+    /// read as "0% used" and paint a false full gauge.
+    public enum DecodeError: Error { case noUsageWindows }
+
     public static func decode(_ data: Data) throws -> UsageSnapshot {
         let d = JSONDecoder()
         d.keyDecodingStrategy = .convertFromSnakeCase
         d.dateDecodingStrategy = .iso8601
-        return try d.decode(UsageSnapshot.self, from: data)
+        let snap = try d.decode(UsageSnapshot.self, from: data)
+        guard snap.fiveHour != nil || snap.sevenDay != nil else {
+            throw DecodeError.noUsageWindows
+        }
+        return snap
     }
 }

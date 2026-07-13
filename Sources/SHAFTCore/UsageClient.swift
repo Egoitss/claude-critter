@@ -42,8 +42,11 @@ public struct UsageClient {
     }
 }
 
+/// Slow on purpose: polling every 15s at high usage got the account rate
+/// limited on the usage endpoint, and the 200-status error body then masked
+/// real usage. High usage still polls fastest, just within polite bounds.
 public func pollInterval(worstFraction f: Double) -> TimeInterval {
-    if f >= 0.8 { return 15 }
-    if f >= 0.5 { return 30 }
-    return 60
+    if f >= 0.8 { return 60 }
+    if f >= 0.5 { return 120 }
+    return 300
 }

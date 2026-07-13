@@ -26,8 +26,25 @@ func runUsageTests() {
     XCTAssertEqual(
         s.spend?.limit?.currency, "EUR", "spend.limit.currency decodes")
 
-    let empty = try! UsageSnapshot.decode("{}".data(using: .utf8)!)
+    // The API answers some errors (e.g. rate limiting) with HTTP 200 and an
+    // error body. Decoding such a payload as "0% used" once showed a false
+    // 100%-remaining gauge, so a snapshot without any usage window must be
+    // rejected rather than silently decoded as empty.
+    XCTAssertThrowsError(
+        try UsageSnapshot.decode("{}".data(using: .utf8)!),
+        "decode rejects a payload with no usage windows")
+    let rateLimited = """
+    {"error":{"type":"rate_limit_error","message":"Rate limited."}}
+    """.data(using: .utf8)!
+    XCTAssertThrowsError(
+        try UsageSnapshot.decode(rateLimited),
+        "decode rejects an HTTP-200 rate-limit error body")
+
+    let weeklyOnly = """
+    {"seven_day":{"utilization":94.0,"resets_at":null}}
+    """.data(using: .utf8)!
+    let w = try? UsageSnapshot.decode(weeklyOnly)
     XCTAssertEqual(
-        empty.worstFraction, 0.0, accuracy: 0.001,
-        "worstFraction defaults to 0 when windows missing")
+        w?.worstFraction ?? -1, 0.94, accuracy: 0.001,
+        "a single present window is enough for a valid snapshot")
 }

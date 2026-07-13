@@ -34,10 +34,12 @@ func runUsageClientTests() async throws {
         "https://api.anthropic.com/api/oauth/usage",
         "fetch hits usage URL")
 
-    XCTAssertEqual(pollInterval(worstFraction: 0.2), 60,
+    // Intervals are deliberately slow: 15s polling at high usage once got
+    // the account rate limited on the usage endpoint (see Usage.decode).
+    XCTAssertEqual(pollInterval(worstFraction: 0.2), 300,
         "pollInterval low tier")
-    XCTAssertEqual(pollInterval(worstFraction: 0.6), 30,
+    XCTAssertEqual(pollInterval(worstFraction: 0.6), 120,
         "pollInterval mid tier")
-    XCTAssertEqual(pollInterval(worstFraction: 0.85), 15,
+    XCTAssertEqual(pollInterval(worstFraction: 0.85), 60,
         "pollInterval high tier")
 }
