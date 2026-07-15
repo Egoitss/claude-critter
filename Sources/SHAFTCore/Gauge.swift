@@ -11,12 +11,65 @@ public struct GaugeRenderer {
         return "\(p)%"
     }
 
-    // usage is the used fraction (0...1), or nil when unknown (fetch failed).
-    public func image(usage: Double?, width: CGFloat, u: CGFloat) -> NSImage {
+    // Gauge ink. Red heart matches the original design; green marks
+    // money; dim marks unknown readings.
+    private static let red = NSColor(srgbRed: 0.929, green: 0.11,
+                                     blue: 0.141, alpha: 1)
+    private static let green = NSColor(srgbRed: 0.216, green: 0.78,
+                                       blue: 0.31, alpha: 1)
+    private static let dim = NSColor(white: 0.45, alpha: 1)
+
+    /// Legacy session-style entry: used fraction -> remaining %.
+    /// Kept so SpritePreview and older callers stay source-stable.
+    public func image(usage: Double?, width: CGFloat,
+                      u: CGFloat) -> NSImage {
+        let reading = GaugeReading(
+            icon: .heart,
+            text: usage.map { percentText(1 - $0) } ?? "--",
+            known: usage != nil)
+        return image(reading: reading, width: width, u: u)
+    }
+
+    /// Renders one resolved reading as the 7u-tall gauge strip.
+    public func image(reading: GaugeReading, width: CGFloat,
+                      u: CGFloat) -> NSImage {
         let size = NSSize(width: width, height: 7 * u)
         return NSImage(size: size, flipped: false) { _ in
-            self.draw(usage: usage, width: width, u: u)
+            self.draw(reading, width: width, u: u)
             return true
+        }
+    }
+
+    /// Centers icon + 1-cell gap + label in the strip and blits both.
+    private func draw(_ r: GaugeReading, width: CGFloat, u: CGFloat) {
+        NSGraphicsContext.current?.shouldAntialias = false
+        let icon = Self.iconBitmap(r.icon)
+        let text = PixelFont.text(r.text)
+        let iconW = CGFloat(icon.first?.count ?? 0)
+        let textW = CGFloat(text.first?.count ?? 0)
+        let groupW = (iconW + 1 + textW) * u
+        let x0 = ((width - groupW) / 2).rounded(.down)
+        blit(icon, x: x0, y: u, u: u, color: Self.iconColor(r))
+        blit(text, x: x0 + (iconW + 1) * u, y: u, u: u,
+             color: r.known ? .white : Self.dim)
+    }
+
+    /// Bitmap for the reading's icon slot.
+    private static func iconBitmap(_ icon: GaugeIcon) -> [String] {
+        switch icon {
+        case .heart: return PixelFont.heart
+        case .weekly: return PixelFont.weekly
+        case .dollar: return PixelFont.dollar
+        }
+    }
+
+    /// Icon ink: red heart, white W, green $; dim when unknown.
+    private static func iconColor(_ r: GaugeReading) -> NSColor {
+        guard r.known else { return dim }
+        switch r.icon {
+        case .heart: return red
+        case .weekly: return .white
+        case .dollar: return green
         }
     }
 
@@ -33,23 +86,5 @@ public struct GaugeRenderer {
                     width: u, height: u)).fill()
             }
         }
-    }
-
-    private func draw(usage f: Double?, width: CGFloat, u: CGFloat) {
-        NSGraphicsContext.current?.shouldAntialias = false
-        let red = NSColor(srgbRed: 0.929, green: 0.11,
-                          blue: 0.141, alpha: 1)
-        let dim = NSColor(white: 0.45, alpha: 1)
-        // known: remaining budget (100% - used); unknown: dim heart + "--"
-        let label = f.map { percentText(1 - $0) } ?? "--"
-        let text = PixelFont.text(label)
-        let textW = CGFloat(text.first?.count ?? 0)
-        // center the heart(5) + 1-cell gap + text group in the strip
-        let groupW = (6 + textW) * u
-        let x0 = ((width - groupW) / 2).rounded(.down)
-        blit(PixelFont.heart, x: x0, y: u, u: u,
-             color: f == nil ? dim : red)
-        blit(text, x: x0 + 6 * u, y: u, u: u,
-             color: f == nil ? dim : .white)
     }
 }
