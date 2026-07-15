@@ -10,7 +10,8 @@ final class StatusController: NSObject {
     private let client = UsageClient(http: URLSessionHTTP(),
         tokens: SecurityCLITokenSource(runner: ProcessCommandRunner()))
     private var model: ClaudeModel = .opus
-    private var usage: Double?          // used fraction; nil until fetched
+    private var snapshot: UsageSnapshot?   // nil until first fetch
+    private var metric: GaugeMetric = .session
     private var errorStreak = 0         // consecutive failed fetches
     private var balance: String?
     private var timer: Timer?
@@ -21,6 +22,9 @@ final class StatusController: NSObject {
         let s = tmux.controllableSessions()
         target = s.contains("claude") ? "claude" : (s.first ?? "claude")
         tmux.session = target
+        pet.onGaugeRightClick = { [weak self] in
+            self?.cycleMetric()
+        }
         render(); refresh()
     }
     private func render() {
@@ -29,7 +33,9 @@ final class StatusController: NSObject {
             outfit: model.outfit, spending: spending, size: 22)
         let critter = renderer.image(
             outfit: model.outfit, spending: spending, size: 128)
-        let gauge = gaugeRenderer.image(usage: usage, width: 128, u: 4)
+        let reading = GaugeReading.resolve(metric, snapshot: snapshot)
+        let gauge = gaugeRenderer.image(reading: reading,
+                                        width: 128, u: 4)
         item.menu = buildMenu()
         pet.update(image: critter, gauge: gauge, menu: buildMenu())
     }
@@ -37,8 +43,8 @@ final class StatusController: NSObject {
     private func buildMenu() -> NSMenu {
         let m = NSMenu()
         m.addItem(info("Model: \(model.displayName)"))
-        let left = usage.map { "\(Int(((1 - $0) * 100).rounded()))% left" }
-        m.addItem(info("Budget: \(left ?? "unavailable")"))
+        m.addItem(info("Session: \(remainingLine(.session))"))
+        m.addItem(info("Weekly: \(remainingLine(.weekly))"))
         m.addItem(info(balance ?? "Extra usage: off"))
         m.addItem(.separator())
         let sessions = tmux.controllableSessions()
@@ -63,6 +69,20 @@ final class StatusController: NSObject {
     private func info(_ t: String) -> NSMenuItem {
         let i = NSMenuItem(title: t, action: nil, keyEquivalent: "")
         i.isEnabled = false; return i
+    }
+    /// "NN% left" for a percent metric, or "unavailable" before the
+    /// first successful fetch / when the window is missing.
+    private func remainingLine(_ m: GaugeMetric) -> String {
+        let r = GaugeReading.resolve(m, snapshot: snapshot)
+        return r.known ? "\(r.text) left" : "unavailable"
+    }
+    /// Advances the gauge metric on gauge right-click, skipping
+    /// credits while extra usage is off.
+    private func cycleMetric() {
+        let creditsOK = snapshot
+            .map { BalanceLine.resolve($0) != .hidden } ?? false
+        metric = metric.next(creditsAvailable: creditsOK)
+        render()
     }
     private func modelSubmenu() -> NSMenuItem {
         let parent = NSMenuItem(title: "Switch model", action: nil,
@@ -116,8 +136,11 @@ final class StatusController: NSObject {
                 return
             }
             errorStreak = 0
-            usage = snap.worstFraction
+            snapshot = snap
             balance = BalanceLine.resolve(snap).display
+            if metric == .credits && balance == nil {
+                metric = .session
+            }
             render()
             schedule(pollInterval(worstFraction: snap.worstFraction))
         }
