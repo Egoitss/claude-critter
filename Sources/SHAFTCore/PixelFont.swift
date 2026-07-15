@@ -5,6 +5,15 @@ public enum PixelFont {
     public static let heart: [String] = [
         ".#.#.", "#####", "#####", ".###.", "..#..",
     ]
+    // 5x5 letter W: the weekly-metric icon.
+    public static let weekly: [String] = [
+        "#...#", "#...#", "#.#.#", "#.#.#", ".#.#.",
+    ]
+    // 5x5 dollar sign: the credits-metric icon. Column 2 carries
+    // the vertical stroke through the S curve.
+    public static let dollar: [String] = [
+        ".####", "#.#..", ".###.", "..#.#", "####.",
+    ]
     static let glyphs: [Character: [String]] = [
         "0": ["###", "#.#", "#.#", "#.#", "###"],
         "1": [".#.", "##.", ".#.", ".#.", "###"],
@@ -18,6 +27,7 @@ public enum PixelFont {
         "9": ["###", "#.#", "###", "..#", "###"],
         "%": ["#.#", "..#", ".#.", "#..", "#.#"],
         "-": ["...", "...", "###", "...", "..."],
+        ".": [".", ".", ".", ".", "#"],
     ]
     public static func glyph(_ ch: Character) -> [String] {
         glyphs[ch] ?? ["...", "...", "...", "...", "..."]
