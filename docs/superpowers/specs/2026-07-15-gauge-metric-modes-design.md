@@ -25,10 +25,12 @@ Cycle order: session → weekly → credits → session.
    5-hour window, e.g. `♥ 100%`.
 2. **Weekly**: white `W` glyph + remaining % of the 7-day window,
    e.g. `W 11%`.
-3. **Credits**: green `$` glyph + remaining extra-usage dollars with
-   two decimals, e.g. `$ 16.50` (limit − used from the `spend`
-   block). Skipped in the cycle when `BalanceLine.resolve` is
-   `.hidden`, so the cycle never lands on an empty mode.
+3. **Credits**: green `$` glyph + remaining extra-usage dollars,
+   e.g. `$ 16.50` (limit − used from the `spend` block). Two
+   decimals below $100; whole dollars from $100 up so the label
+   fits the 128px strip. Skipped in the cycle when
+   `BalanceLine.resolve` is `.hidden`, so the cycle never lands on
+   an empty mode.
 
 A metric whose window is missing shows the existing dim `--`
 treatment. A fetch that has never succeeded shows `--` as today.
