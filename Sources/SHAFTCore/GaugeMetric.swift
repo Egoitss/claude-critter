@@ -19,3 +19,61 @@ public enum GaugeMetric: Equatable {
         }
     }
 }
+
+/// The icon slot drawn left of the gauge label.
+public enum GaugeIcon: Equatable { case heart, weekly, dollar }
+
+/// One resolved gauge display: icon, label text, and whether the
+/// underlying figure is known (unknown renders dim, as "--").
+public struct GaugeReading: Equatable {
+    public let icon: GaugeIcon
+    public let text: String
+    public let known: Bool
+
+    /// Memberwise init, public for the renderer and tests.
+    public init(icon: GaugeIcon, text: String, known: Bool) {
+        self.icon = icon; self.text = text; self.known = known
+    }
+
+    /// Maps a metric + latest snapshot to what the gauge draws.
+    /// Percent modes show remaining budget (100 - used); credits
+    /// shows remaining dollars, dropping cents from $100 up so the
+    /// label fits the 128px strip.
+    public static func resolve(_ metric: GaugeMetric,
+                               snapshot: UsageSnapshot?)
+        -> GaugeReading {
+        switch metric {
+        case .session:
+            return percent(.heart, snapshot?.fiveHour)
+        case .weekly:
+            return percent(.weekly, snapshot?.sevenDay)
+        case .credits:
+            return credits(snapshot)
+        }
+    }
+
+    /// Remaining-% reading for one usage window, or unknown.
+    private static func percent(_ icon: GaugeIcon,
+                                _ window: Window?) -> GaugeReading {
+        guard let w = window else {
+            return GaugeReading(icon: icon, text: "--", known: false)
+        }
+        let left = max(0, min(1, 1 - w.utilization / 100))
+        let p = Int((left * 100).rounded())
+        return GaugeReading(icon: icon, text: "\(p)%", known: true)
+    }
+
+    /// Remaining extra-usage dollars, or unknown when spend is off.
+    private static func credits(_ snapshot: UsageSnapshot?)
+        -> GaugeReading {
+        guard let s = snapshot,
+              case let .overage(rem, _, _) = BalanceLine.resolve(s)
+        else {
+            return GaugeReading(icon: .dollar, text: "--",
+                                known: false)
+        }
+        let text = rem < 100 ? String(format: "%.2f", rem)
+                             : String(format: "%.0f", rem)
+        return GaugeReading(icon: .dollar, text: text, known: true)
+    }
+}
