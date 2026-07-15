@@ -3,6 +3,11 @@ import Foundation
 public struct Window: Decodable {
     public let utilization: Double
     public let resetsAt: Date?
+    /// Memberwise init, public so tests can build fixtures.
+    public init(utilization: Double, resetsAt: Date?) {
+        self.utilization = utilization
+        self.resetsAt = resetsAt
+    }
 }
 
 public struct ExtraUsage: Decodable {
