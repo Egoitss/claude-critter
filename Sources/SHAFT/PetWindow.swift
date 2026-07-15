@@ -2,11 +2,22 @@ import AppKit
 
 /// An `NSImageView` that initiates a real window drag on mouse-down,
 /// since `isMovableByWindowBackground` is unreliable for a
-/// `.nonactivatingPanel`. Right-click still opens `.menu` normally,
-/// since `rightMouseDown` is untouched.
+/// `.nonactivatingPanel`. Right-click runs `onRightClick` when set
+/// (the gauge strip cycles metrics); otherwise it opens `.menu`
+/// normally via the superclass.
 final class PetView: NSImageView {
+    var onRightClick: (() -> Void)?
+
     override func mouseDown(with event: NSEvent) {
         window?.performDrag(with: event)
+    }
+
+    override func rightMouseDown(with event: NSEvent) {
+        guard let handler = onRightClick else {
+            super.rightMouseDown(with: event)
+            return
+        }
+        handler()
     }
 }
 
@@ -70,4 +81,11 @@ final class PetWindow {
     }
 
     var isVisible: Bool { panel.isVisible }
+
+    /// Fired when the gauge strip is right-clicked; the critter view
+    /// keeps the default context-menu behavior.
+    var onGaugeRightClick: (() -> Void)? {
+        get { gaugeView.onRightClick }
+        set { gaugeView.onRightClick = newValue }
+    }
 }
