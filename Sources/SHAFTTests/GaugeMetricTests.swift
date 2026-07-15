@@ -17,7 +17,7 @@ private func snap(five: Double?, seven: Double?,
         extraUsage: nil, spend: spend)
 }
 
-/// Covers metric cycling; Task 2 extends this with reading checks.
+/// Covers metric cycling and GaugeReading resolution for all modes.
 func runGaugeMetricTests() {
     XCTAssertEqual(GaugeMetric.session.next(creditsAvailable: false),
         .weekly, "session -> weekly")

@@ -73,6 +73,8 @@ final class PetWindow {
         imageView.image = image
         imageView.menu = menu
         gaugeView.image = gauge
+        // Fallback only: unreachable while onGaugeRightClick is set,
+        // which redirects the gauge's right-click to metric cycling.
         gaugeView.menu = menu
     }
 
